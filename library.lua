@@ -1,10 +1,12 @@
-do
+do --// UI Source
     if getgenv().Library and getgenv().Library.Exit then
         getgenv().Library:Exit()
     end
 
+    -- Bad executor support (atleast by a bit)
     cloneref = cloneref or function(Object) return Object end
 
+    --#region Services
     local Players = game:GetService("Players")
     local UserInputService = game:GetService("UserInputService")
     local RunService = game:GetService("RunService")
@@ -12,19 +14,22 @@ do
     local TweenService = game:GetService("TweenService")
     local GuiService = game:GetService("GuiService")
     local CoreGui = cloneref(game:GetService("CoreGui"))
+    --#endregion
 
     gethui = gethui or function() return CoreGui end
 
+    --#region Variables
     local LocalPlayer = Players.LocalPlayer
     local IsMobile = UserInputService.TouchEnabled or false
     local GuiInset = GuiService:GetGuiInset().Y
     local Mouse = cloneref(LocalPlayer:GetMouse())
+    --#endregion
 
     Library = {
         Flags = { },
         MenuKeybind = tostring(Enum.KeyCode.X),
 
-        Directory = "secrethaxx",
+        Directory = "Radiance",
         Folders = {
             Assets = "/Assets",
             Configs = "/Configs"
@@ -40,13 +45,13 @@ do
 
         ZIndexOrder = {
             ["OptionHolder"] = 4,
-            ["KeybindWindow"] = 4,
+            ["KeybindWindow"] = 4, -- burp
             ["ColorpickerWindow"] = 6
         },
 
         Theme = nil,
-        Locked = false,
 
+        -- Ignore below
         Threads = { },
         Connections = { },
         SetFlags = { },
@@ -61,9 +66,6 @@ do
 
         Font = nil,
         BoldFont = nil,
-        
-        TopbarButtons = { },
-        GlowIntensity = 0.65,
     } do
         Library.__index = Library
 
@@ -147,6 +149,7 @@ do
             ["RightAlt"]          = "RightAlt"
         }
 
+        -- Folders
         if not isfolder(Library.Directory) then
             makefolder(Library.Directory)
         end
@@ -168,13 +171,14 @@ do
                 ["Outline 3"] = Color3.fromRGB(15, 15, 15),
                 ["Outline 4"] = Color3.fromRGB(10, 10, 10),
                 ["Inactive Text"] = Color3.fromRGB(135, 135, 135),
-                ["Accent"] = Color3.fromRGB(126, 192, 255),
+                ["Accent"] = Color3.fromRGB(126, 192, 255), -- 126, 192, 255
                 ["Hovered Element"] = Color3.fromRGB(35, 35, 35),
             }
         }
 
         Library.Theme = Themes.Preset
 
+        -- Custom Font
         local CustomFont = { } do
             function CustomFont:New(Name, Weight, Style, Data)
                 if not isfile(Data.Id) then
@@ -402,10 +406,6 @@ do
                 return
             end
 
-            if Library.Locked then
-                return
-            end
-
             local Gui = Self.Instance
             local Dragging = false
             local DragStart
@@ -460,10 +460,6 @@ do
 
         Library.MakeResizeable = function(Self, Minimum)
             if not Self.Instance then
-                return
-            end
-
-            if Library.Locked then
                 return
             end
 
@@ -1235,7 +1231,7 @@ do
                     elseif type(Color) == "string" then
                         Color = Color3.fromHex(Color)
                     else
-                        Color = Color
+                        Color = Color -- lul
                     end
 
                     Colorpicker.Hue, Colorpicker.Saturation, Colorpicker.Value = Color:ToHSV()
@@ -3076,7 +3072,7 @@ do
                     if IsMobile then
                         Library:Create("UIScale", {
                             Parent = Items["MainFrame"],
-                            Scale = 0.67
+                            Scale = 0.67 -- funyn
                         })
                     end
 
@@ -3127,23 +3123,6 @@ do
                         Color = Library.Theme["Outline 4"],
                         BorderOffset = UDim.new(0, 3)
                     }):AddToTheme({Color = 'Outline 4'})
-
-                    Items["Glow"] = Library:Create("ImageLabel", {
-                        Name = "\0",
-                        Parent = Items["MainFrame"].Instance,
-                        ImageColor3 = Library.Theme["Outline 4"],
-                        ScaleType = Enum.ScaleType.Slice,
-                        ImageTransparency = 0.65,
-                        BorderColor3 = rgb(0, 0, 0),
-                        Size = UDim2.new(1, 40, 1, 40),
-                        Image = "rbxassetid://18245826428",
-                        BackgroundTransparency = 1,
-                        Position = UDim2.new(0, -20, 0, -20),
-                        BackgroundColor3 = Color3.fromRGB(255, 255, 255),
-                        BorderSizePixel = 0,
-                        SliceCenter = Rect.new(Vector2.new(21, 21), Vector2.new(79, 79)),
-                        ZIndex = -1
-                    }):AddToTheme({ImageColor3 = 'Outline 4'})
 
                     Items["Pages"] = Library:Create("Frame", {
                         Name = "\0",
@@ -3332,49 +3311,6 @@ do
                 end)
 
                 Window:Center()
-                
-                function Window:CreateTopbarButton(ButtonData)
-                    local Button = Library:Create("TextButton", {
-                        Name = "\0",
-                        FontFace = Library.Font,
-                        TextSize = Library.FontSize,
-                        Parent = Items["Title"].Instance,
-                        TextColor3 = Library.Theme["Text"],
-                        Text = ButtonData.Text or "",
-                        AutoButtonColor = false,
-                        BackgroundTransparency = 1,
-                        Size = UDim2.new(0, 0, 0, 12),
-                        Position = UDim2.new(0, 0, 0.5, 0),
-                        AutomaticSize = Enum.AutomaticSize.X
-                    }):AddToTheme({TextColor3 = 'Text'})
-
-                    Button:Connect("MouseButton1Down", function()
-                        if ButtonData.Callback then
-                            ButtonData.Callback()
-                        end
-                    end)
-
-                    table.insert(Library.TopbarButtons, Button)
-                    return Button
-                end
-                
-                if IsMobile then
-                    local ToggleButton = Window:CreateTopbarButton({
-                        Text = "☰",
-                        Callback = function()
-                            Window:SetOpen(not Window.IsOpen)
-                        end
-                    })
-                    
-                    local LockButton = Window:CreateTopbarButton({
-                        Text = "🔒",
-                        Callback = function()
-                            Library.Locked = not Library.Locked
-                            LockButton.Instance.Text = Library.Locked and "🔓" or "🔒"
-                        end
-                    })
-                end
-
                 return setmetatable(Window, Library)
             end
 
