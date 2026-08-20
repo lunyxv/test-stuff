@@ -4,7 +4,7 @@
     -> Made by @finobe 
     -> Kind of got bored idk what to do with life
     -> Mobile Support Added
-    -> Purple Theme
+    -> Fixed Theme
 ]]
 
 if getgenv().Loaded then 
@@ -38,19 +38,20 @@ getgenv().Loaded = true
         ConfigFlags = {},
         Connections = {},   
         Notifications = {Notifs = {}},
-        OpenElement = {}; -- type: table or userdata
+        OpenElement = {},
+        Locked = false,
     }
 
     local themes = {
         preset = {
-            accent = rgb(147, 51, 234), -- Purple accent
-            window_outline = rgb(0, 0, 0),
-            inline = rgb(30, 27, 45), -- Dark purple
-            background = rgb(20, 18, 30), -- Darker purple background
-            visible_backgrounds = rgb(25, 22, 38), -- Slightly lighter purple
-            text_color = rgb(235, 225, 255), -- Light purple tint
-            glow = rgb(147, 51, 234), -- Purple glow
-            deselected = rgb(107, 92, 130), -- Muted purple
+            accent = rgb(147, 51, 234),
+            window_outline = rgb(20, 20, 20),
+            inline = rgb(45, 45, 45),
+            background = rgb(35, 35, 35),
+            visible_backgrounds = rgb(40, 40, 40),
+            text_color = rgb(220, 220, 220),
+            glow = rgb(147, 51, 234),
+            deselected = rgb(150, 150, 150),
         },
         utility = {},
         gradients = {
@@ -295,6 +296,7 @@ getgenv().Loaded = true
 
             Parent.InputBegan:Connect(function(Input)
                 if Input.UserInputType == Enum.UserInputType.MouseButton1 then
+                    if Library.Locked then return end
                     Dragging = true
                     InitialPosition = Input.Position
                     InitialSize = Parent.Position
@@ -308,7 +310,7 @@ getgenv().Loaded = true
             end)
 
             Library:Connection(InputService.InputChanged, function(Input, game_event) 
-                if Dragging and Input.UserInputType == Enum.UserInputType.MouseMovement then
+                if Dragging and Input.UserInputType == Enum.UserInputType.MouseMovement and not Library.Locked then
                     local Horizontal = Camera.ViewportSize.X
                     local Vertical = Camera.ViewportSize.Y
 
@@ -401,10 +403,6 @@ getgenv().Loaded = true
                 List[#List + 1] = Name
             end
 
-            for _,v in List do 
-                print(_,v)
-            end 
-
             ConfigHolder.RefreshOptions(List)
         end
 
@@ -413,13 +411,8 @@ getgenv().Loaded = true
                 Name = properties.Name or "Color", 
                 Flag = properties.Flag or properties.Name or "Colorpicker",
                 Callback = properties.Callback or function() end,
-
-                Color = properties.Color or color(1, 1, 1), -- Default to white color if not provided
+                Color = properties.Color or color(1, 1, 1),
                 Alpha = properties.Alpha or properties.Transparency or 0,
-                
-                Mode = properties.Mode or "Keypicker"; -- Animation
-
-                -- Other
                 Open = false, 
                 Items = {};
             }
@@ -434,396 +427,392 @@ getgenv().Loaded = true
             Flags[Cfg.Flag] = {Color = Cfg.Color, Transparency = Cfg.Alpha}
 
             local Items = Cfg.Items; do 
-                -- Component
-                    Items.Button = Library:Create( "TextButton" , {
-                        Active = false;
-                        BorderColor3 = rgb(0, 0, 0);
-                        Text = "";
-                        AutoButtonColor = false;
-                        Name = "\0";
-                        LayoutOrder = -1;
-                        Parent = self.Items.Components;
-                        Size = dim2(0, 28, 0, 14);
-                        Selectable = false;
-                        BorderSizePixel = 0;
-                        BackgroundColor3 = rgb(30, 27, 45)
-                    });
-                    
-                    Items.ButtonColor = Library:Create( "Frame" , {
-                        Parent = Items.Button;
-                        Name = "\0";
-                        Position = dim2(0, 1, 0, 1);
-                        BorderColor3 = rgb(0, 0, 0);
-                        Size = dim2(1, -2, 1, -2);
-                        BorderSizePixel = 0;
-                        BackgroundColor3 = rgb(147, 51, 234)
-                    });
-                    
-                    Library:Create( "UICorner" , {
-                        Parent = Items.ButtonColor;
-                        CornerRadius = dim(0, 4)
-                    });
-                    
-                    Library:Create( "UICorner" , {
-                        Parent = Items.Button;
-                        CornerRadius = dim(0, 4)
-                    });
-                --
+                Items.Button = Library:Create( "TextButton" , {
+                    Active = false;
+                    BorderColor3 = rgb(0, 0, 0);
+                    Text = "";
+                    AutoButtonColor = false;
+                    Name = "\0";
+                    LayoutOrder = -1;
+                    Parent = self.Items.Components;
+                    Size = dim2(0, 28, 0, 14);
+                    Selectable = false;
+                    BorderSizePixel = 0;
+                    BackgroundColor3 = rgb(45, 45, 45)
+                });
                 
-                -- Colorpicker
-                    Items.Window = Library:Create( "TextButton" , {
-                        Parent = Library.Other;
-                        Text = "";
-                        AutoButtonColor = false;
-                        Active = false;
-                        Name = "\0";
-                        Position = dim2(0, 100, 0, 10);
-                        BorderColor3 = rgb(0, 0, 0);
-                        Size = dim2(0, 230, 0, 200);
-                        BorderSizePixel = 0;
-                        BackgroundColor3 = themes.preset.inline
-                    });	Library:Themify(Items.Window, "inline", "BackgroundColor3")
+                Items.ButtonColor = Library:Create( "Frame" , {
+                    Parent = Items.Button;
+                    Name = "\0";
+                    Position = dim2(0, 1, 0, 1);
+                    BorderColor3 = rgb(0, 0, 0);
+                    Size = dim2(1, -2, 1, -2);
+                    BorderSizePixel = 0;
+                    BackgroundColor3 = rgb(147, 51, 234)
+                });
+                
+                Library:Create( "UICorner" , {
+                    Parent = Items.ButtonColor;
+                    CornerRadius = dim(0, 4)
+                });
+                
+                Library:Create( "UICorner" , {
+                    Parent = Items.Button;
+                    CornerRadius = dim(0, 4)
+                });
+                
+                Items.Window = Library:Create( "TextButton" , {
+                    Parent = Library.Other;
+                    Text = "";
+                    AutoButtonColor = false;
+                    Active = false;
+                    Name = "\0";
+                    Position = dim2(0, 100, 0, 10);
+                    BorderColor3 = rgb(0, 0, 0);
+                    Size = dim2(0, 230, 0, 200);
+                    BorderSizePixel = 0;
+                    BackgroundColor3 = themes.preset.inline
+                });	Library:Themify(Items.Window, "inline", "BackgroundColor3")
 
-                    Items.Fade = Library:Create( "Frame" , {
-                        Parent = Items.Window;
-                        BackgroundTransparency = 1;
-                        ZIndex = 500;
-                        Name = "\0";
-                        Position = dim2(0, 0, 0, 0);
-                        BorderColor3 = rgb(0, 0, 0);
-                        Size = dim2(1, 0, 1, 0);
-                        BorderSizePixel = 0;
-                        BackgroundColor3 = themes.preset.inline
-                    });	Library:Themify(Items.Window, "inline", "BackgroundColor3")
+                Items.Fade = Library:Create( "Frame" , {
+                    Parent = Items.Window;
+                    BackgroundTransparency = 1;
+                    ZIndex = 500;
+                    Name = "\0";
+                    Position = dim2(0, 0, 0, 0);
+                    BorderColor3 = rgb(0, 0, 0);
+                    Size = dim2(1, 0, 1, 0);
+                    BorderSizePixel = 0;
+                    BackgroundColor3 = themes.preset.inline
+                });	Library:Themify(Items.Window, "inline", "BackgroundColor3")
 
-                    Library:Create( "UICorner" , {
-                        Parent = Items.Window
-                    });                    
+                Library:Create( "UICorner" , {
+                    Parent = Items.Window
+                });                    
 
-                    Items.Inline = Library:Create( "Frame" , {
-                        Parent = Items.Window;
-                        Name = "\0";
-                        Position = dim2(0, 1, 0, 1);
-                        BorderColor3 = rgb(0, 0, 0);
-                        Size = dim2(1, -2, 1, -2);
-                        BorderSizePixel = 0;
-                        BackgroundColor3 = themes.preset.visible_backgrounds
-                    });	Library:Themify(Items.Inline, "visible_backgrounds", "BackgroundColor3")
-                    
-                    Library:Create( "UICorner" , {
-                        Parent = Items.Inline
-                    });                    
+                Items.Inline = Library:Create( "Frame" , {
+                    Parent = Items.Window;
+                    Name = "\0";
+                    Position = dim2(0, 1, 0, 1);
+                    BorderColor3 = rgb(0, 0, 0);
+                    Size = dim2(1, -2, 1, -2);
+                    BorderSizePixel = 0;
+                    BackgroundColor3 = themes.preset.visible_backgrounds
+                });	Library:Themify(Items.Inline, "visible_backgrounds", "BackgroundColor3")
+                
+                Library:Create( "UICorner" , {
+                    Parent = Items.Inline
+                });                    
 
-                    Items.Fill = Library:Create( "Frame" , {
-                        Parent = Items.Inline;
-                        Name = "\0";
-                        Position = dim2(0, 1, 0, 26);
-                        BorderColor3 = rgb(0, 0, 0);
-                        Size = dim2(1, -2, 0, 1);
-                        BorderSizePixel = 0;
-                        BackgroundColor3 = themes.preset.inline
-                    });	Library:Themify(Items.Fill, "inline", "BackgroundColor3")
-                    
-                    Items.Pallete = Library:Create( "Frame" , {
-                        Parent = Items.Inline;
-                        Name = "\0";
-                        BackgroundTransparency = 1;
-                        Position = dim2(0, 1, 0, 2);
-                        BorderColor3 = rgb(0, 0, 0);
-                        Size = dim2(1, -4, 1, -3);
-                        BorderSizePixel = 0;
-                        BackgroundColor3 = rgb(40, 40, 40)
-                    });
-                    
-                    Items.Outline = Library:Create( "Frame" , {
-                        Name = "\0";
-                        Parent = Items.Pallete;
-                        BorderColor3 = rgb(0, 0, 0);
-                        Size = dim2(1, -38, 1, -43);
-                        BorderSizePixel = 0;
-                        BackgroundColor3 = rgb(0, 0, 0)
-                    });
-                    
-                    Items.Inline = Library:Create( "Frame" , {
-                        Parent = Items.Outline;
-                        Name = "\0";
-                        Position = dim2(0, 1, 0, 1);
-                        BorderColor3 = rgb(0, 0, 0);
-                        Size = dim2(1, -2, 1, -2);
-                        BorderSizePixel = 0;
-                        BackgroundColor3 = themes.preset.inline
-                    });	Library:Themify(Items.Inline, "inline", "BackgroundColor3")
-                    
-                    Items.Inner = Library:Create( "Frame" , {
-                        Parent = Items.Inline;
-                        Name = "\0";
-                        Position = dim2(0, 1, 0, 1);
-                        BorderColor3 = rgb(0, 0, 0);
-                        Size = dim2(1, -2, 1, -2);
-                        BorderSizePixel = 0;
-                        BackgroundColor3 = rgb(147, 51, 234)
-                    });
-                    
-                    Items.Val = Library:Create( "TextButton" , {
-                        Name = "\0";
-                        Text = "";
-                        AutoButtonColor = false;
-                        Parent = Items.Inner;
-                        BorderColor3 = rgb(0, 0, 0);
-                        Size = dim2(1, 0, 1, 0);
-                        BorderSizePixel = 0;
-                        BackgroundColor3 = rgb(255, 255, 255)
-                    });
-                    
-                    Library:Create( "UIGradient" , {
-                        Parent = Items.Val;
-                        Transparency = numseq{numkey(0, 0), numkey(1, 1)}
-                    });
-                    
-                    Items.SatValPicker = Library:Create( "Frame" , {
-                        Name = "\0";
-                        Parent = Items.Inner;
-                        BorderColor3 = rgb(0, 0, 0);
-                        Size = dim2(0, 3, 0, 3);
-                        BorderSizePixel = 0;
-                        BackgroundColor3 = rgb(0, 0, 0)
-                    });
-                    
-                    Items.inline = Library:Create( "Frame" , {
-                        Parent = Items.SatValPicker;
-                        Name = "\0";
-                        Position = dim2(0, 1, 0, 1);
-                        BorderColor3 = rgb(0, 0, 0);
-                        Size = dim2(1, -2, 1, -2);
-                        BorderSizePixel = 0;
-                        BackgroundColor3 = rgb(255, 255, 255)
-                    });
-                    
-                    Items.Saturation = Library:Create( "Frame" , {
-                        Parent = Items.Inner;
-                        Name = "\0";
-                        Size = dim2(1, 0, 1, 0);
-                        BorderColor3 = rgb(0, 0, 0);
-                        ZIndex = 2;
-                        BorderSizePixel = 0;
-                        BackgroundColor3 = rgb(255, 255, 255)
-                    });
-                    
-                    Library:Create( "UIGradient" , {
-                        Rotation = 270;
-                        Transparency = numseq{numkey(0, 0), numkey(1, 1)};
-                        Parent = Items.Saturation;
-                        Color = rgbseq{rgbkey(0, rgb(0, 0, 0)), rgbkey(1, rgb(0, 0, 0))}
-                    });
-                    
-                    Items.HexTextbox = Library:Create( "Frame" , {
-                        AnchorPoint = vec2(0, 1);
-                        Parent = Items.Pallete;
-                        Name = "\0";
-                        Position = dim2(0, 1, 1, 0);
-                        BorderColor3 = rgb(0, 0, 0);
-                        Size = dim2(1, -39, 0, 18);
-                        BorderSizePixel = 0;
-                        BackgroundColor3 = rgb(0, 0, 0)
-                    });
-                    
-                    Items.Inline = Library:Create( "Frame" , {
-                        Parent = Items.HexTextbox;
-                        Name = "\0";
-                        Position = dim2(0, 1, 0, 1);
-                        BorderColor3 = rgb(0, 0, 0);
-                        Size = dim2(1, -2, 1, -2);
-                        BorderSizePixel = 0;
-                        BackgroundColor3 = themes.preset.inline
-                    });	Library:Themify(Items.Inline, "inline", "BackgroundColor3")
-                    
-                    Items.Background = Library:Create( "Frame" , {
-                        Parent = Items.Inline;
-                        Name = "\0";
-                        Position = dim2(0, 1, 0, 1);
-                        BorderColor3 = rgb(0, 0, 0);
-                        Size = dim2(1, -2, 1, -2);
-                        BorderSizePixel = 0;
-                        BackgroundColor3 = themes.preset.background
-                    });	Library:Themify(Items.Background, "background", "BackgroundColor3")
-                    
-                    Items.AlphaInput = Library:Create( "TextBox" , {
-                        FontFace = Font.new("rbxassetid://12187365364", Enum.FontWeight.SemiBold, Enum.FontStyle.Normal);
-                        Parent = Items.Background;
-                        TextColor3 = rgb(239, 239, 239);
-                        BorderColor3 = rgb(0, 0, 0);
-                        Text = "255, 255, 255, 0.5";
-                        Name = "\0";
-                        Size = dim2(1, 0, 1, 0);
-                        Selectable = false;
-                        BorderSizePixel = 0;
-                        BackgroundTransparency = 1;
-                        TextXAlignment = Enum.TextXAlignment.Left;
-                        Active = false;
-                        AutomaticSize = Enum.AutomaticSize.XY;
-                        TextSize = 14;
-                        BackgroundColor3 = rgb(255, 255, 255)
-                    });
-                    
-                    Items.HueTextbox = Library:Create( "Frame" , {
-                        AnchorPoint = vec2(0, 1);
-                        Parent = Items.Pallete;
-                        Name = "\0";
-                        Position = dim2(0, 1, 1, -22);
-                        BorderColor3 = rgb(0, 0, 0);
-                        Size = dim2(1, -39, 0, 18);
-                        BorderSizePixel = 0;
-                        BackgroundColor3 = rgb(0, 0, 0)
-                    });
-                    
-                    Items.Inline = Library:Create( "Frame" , {
-                        Parent = Items.HueTextbox;
-                        Name = "\0";
-                        Position = dim2(0, 1, 0, 1);
-                        BorderColor3 = rgb(0, 0, 0);
-                        Size = dim2(1, -2, 1, -2);
-                        BorderSizePixel = 0;
-                        BackgroundColor3 = themes.preset.inline
-                    });	Library:Themify(Items.Inline, "inline", "BackgroundColor3")
-                    
-                    Items.Background = Library:Create( "Frame" , {
-                        Parent = Items.Inline;
-                        Name = "\0";
-                        Position = dim2(0, 1, 0, 1);
-                        BorderColor3 = rgb(0, 0, 0);
-                        Size = dim2(1, -2, 1, -2);
-                        BorderSizePixel = 0;
-                        BackgroundColor3 = themes.preset.background
-                    });	Library:Themify(Items.Background, "background", "BackgroundColor3")
-                    
-                    Items.RGBInput = Library:Create( "TextBox" , {
-                        FontFace = Font.new("rbxassetid://12187365364", Enum.FontWeight.SemiBold, Enum.FontStyle.Normal);
-                        Parent = Items.Background;
-                        TextColor3 = rgb(239, 239, 239);
-                        BorderColor3 = rgb(0, 0, 0);
-                        Text = "255, 255, 255, 0.5";
-                        Name = "\0";
-                        Size = dim2(1, 0, 1, 0);
-                        Selectable = false;
-                        BorderSizePixel = 0;
-                        BackgroundTransparency = 1;
-                        Active = false;
-                        TextXAlignment = Enum.TextXAlignment.Left;
-                        AutomaticSize = Enum.AutomaticSize.XY;
-                        TextSize = 14;
-                        BackgroundColor3 = rgb(255, 255, 255)
-                    });
-                    
-                    Items.Alpha = Library:Create( "TextButton" , {
-                        Active = false;
-                        BorderColor3 = rgb(0, 0, 0);
-                        Text = "";
-                        AutoButtonColor = false;
-                        AnchorPoint = vec2(1, 1);
-                        Parent = Items.Pallete;
-                        Name = "\0";
-                        Position = dim2(1, 2, 1, 0);
-                        Size = dim2(0, 16, 1, 0);
-                        Selectable = false;
-                        BorderSizePixel = 0;
-                        BackgroundColor3 = rgb(0, 0, 0)
-                    });
-                    
-                    Items.Inline = Library:Create( "Frame" , {
-                        Parent = Items.Alpha;
-                        Name = "\0";
-                        Position = dim2(0, 1, 0, 1);
-                        BorderColor3 = rgb(0, 0, 0);
-                        Size = dim2(1, -2, 1, -2);
-                        BorderSizePixel = 0;
-                        BackgroundColor3 = themes.preset.inline
-                    });	Library:Themify(Items.Inline, "inline", "BackgroundColor3")
-                    
-                    Items.Background = Library:Create( "Frame" , {
-                        Parent = Items.Inline;
-                        Name = "\0";
-                        Position = dim2(0, 1, 0, 1);
-                        BorderColor3 = rgb(0, 0, 0);
-                        Size = dim2(1, -2, 1, -2);
-                        BorderSizePixel = 0;
-                        BackgroundColor3 = rgb(255, 255, 255)
-                    });
-                    
-                    Library:Create( "UIGradient" , {
-                        Rotation = 90;
-                        Parent = Items.Background;
-                        Color = rgbseq{rgbkey(0, rgb(255, 255, 255)), rgbkey(1, rgb(9, 9, 9))}
-                    });
-                    
-                    Items.AlphaPicker = Library:Create( "Frame" , {
-                        Parent = Items.Background;
-                        Name = "\0";
-                        BorderMode = Enum.BorderMode.Inset;
-                        BorderColor3 = rgb(0, 0, 0);
-                        Size = dim2(1, 2, 0, 3);
-                        Position = dim2(0, -1, 0, -1);
-                        BackgroundColor3 = rgb(255, 255, 255)
-                    });
-                    
-                    Items.RGB = Library:Create( "TextButton" , {
-                        Active = false;
-                        BorderColor3 = rgb(0, 0, 0);
-                        Text = "";
-                        AutoButtonColor = false;
-                        AnchorPoint = vec2(1, 1);
-                        Parent = Items.Pallete;
-                        Name = "\0";
-                        Position = dim2(1, -18, 1, 0);
-                        Size = dim2(0, 16, 1, 0);
-                        Selectable = false;
-                        BorderSizePixel = 0;
-                        BackgroundColor3 = rgb(0, 0, 0)
-                    });
-                    
-                    Items.Inline = Library:Create( "Frame" , {
-                        Parent = Items.RGB;
-                        Name = "\0";
-                        Position = dim2(0, 1, 0, 1);
-                        BorderColor3 = rgb(0, 0, 0);
-                        Size = dim2(1, -2, 1, -2);
-                        BorderSizePixel = 0;
-                        BackgroundColor3 = themes.preset.inline
-                    });	Library:Themify(Items.Inline, "inline", "BackgroundColor3")
-                    
-                    Items.hue_drag = Library:Create( "Frame" , {
-                        Parent = Items.Inline;
-                        Name = "\0";
-                        Position = dim2(0, 1, 0, 1);
-                        BorderColor3 = rgb(0, 0, 0);
-                        Size = dim2(1, -2, 1, -2);
-                        BorderSizePixel = 0;
-                        BackgroundColor3 = rgb(255, 255, 255)
-                    });
-                    
-                    Library:Create( "UIGradient" , {
-                        Rotation = 90;
-                        Parent = Items.hue_drag;
-                        Color = rgbseq{rgbkey(0, rgb(255, 0, 0)), rgbkey(0.17, rgb(255, 255, 0)), rgbkey(0.33, rgb(0, 255, 0)), rgbkey(0.5, rgb(0, 255, 255)), rgbkey(0.67, rgb(0, 0, 255)), rgbkey(0.83, rgb(255, 0, 255)), rgbkey(1, rgb(255, 0, 0))}
-                    });
-                    
-                    Items.HuePicker = Library:Create( "Frame" , {
-                        Parent = Items.hue_drag;
-                        Name = "\0";
-                        BorderMode = Enum.BorderMode.Inset;
-                        BorderColor3 = rgb(0, 0, 0);
-                        Size = dim2(1, 2, 0, 3);
-                        Position = dim2(0, -1, 0, -1);
-                        BackgroundColor3 = rgb(255, 255, 255)
-                    });
-                    
-                    Library:Create( "UIPadding" , {
-                        PaddingTop = dim(0, 2);
-                        PaddingBottom = dim(0, 3);
-                        Parent = Items.Pallete;
-                        PaddingRight = dim(0, 3);
-                        PaddingLeft = dim(0, 2)
-                    });
-                -- 
+                Items.Fill = Library:Create( "Frame" , {
+                    Parent = Items.Inline;
+                    Name = "\0";
+                    Position = dim2(0, 1, 0, 26);
+                    BorderColor3 = rgb(0, 0, 0);
+                    Size = dim2(1, -2, 0, 1);
+                    BorderSizePixel = 0;
+                    BackgroundColor3 = themes.preset.inline
+                });	Library:Themify(Items.Fill, "inline", "BackgroundColor3")
+                
+                Items.Pallete = Library:Create( "Frame" , {
+                    Parent = Items.Inline;
+                    Name = "\0";
+                    BackgroundTransparency = 1;
+                    Position = dim2(0, 1, 0, 2);
+                    BorderColor3 = rgb(0, 0, 0);
+                    Size = dim2(1, -4, 1, -3);
+                    BorderSizePixel = 0;
+                    BackgroundColor3 = rgb(45, 45, 45)
+                });
+                
+                Items.Outline = Library:Create( "Frame" , {
+                    Name = "\0";
+                    Parent = Items.Pallete;
+                    BorderColor3 = rgb(0, 0, 0);
+                    Size = dim2(1, -38, 1, -43);
+                    BorderSizePixel = 0;
+                    BackgroundColor3 = rgb(0, 0, 0)
+                });
+                
+                Items.Inline = Library:Create( "Frame" , {
+                    Parent = Items.Outline;
+                    Name = "\0";
+                    Position = dim2(0, 1, 0, 1);
+                    BorderColor3 = rgb(0, 0, 0);
+                    Size = dim2(1, -2, 1, -2);
+                    BorderSizePixel = 0;
+                    BackgroundColor3 = themes.preset.inline
+                });	Library:Themify(Items.Inline, "inline", "BackgroundColor3")
+                
+                Items.Inner = Library:Create( "Frame" , {
+                    Parent = Items.Inline;
+                    Name = "\0";
+                    Position = dim2(0, 1, 0, 1);
+                    BorderColor3 = rgb(0, 0, 0);
+                    Size = dim2(1, -2, 1, -2);
+                    BorderSizePixel = 0;
+                    BackgroundColor3 = rgb(147, 51, 234)
+                });
+                
+                Items.Val = Library:Create( "TextButton" , {
+                    Name = "\0";
+                    Text = "";
+                    AutoButtonColor = false;
+                    Parent = Items.Inner;
+                    BorderColor3 = rgb(0, 0, 0);
+                    Size = dim2(1, 0, 1, 0);
+                    BorderSizePixel = 0;
+                    BackgroundColor3 = rgb(255, 255, 255)
+                });
+                
+                Library:Create( "UIGradient" , {
+                    Parent = Items.Val;
+                    Transparency = numseq{numkey(0, 0), numkey(1, 1)}
+                });
+                
+                Items.SatValPicker = Library:Create( "Frame" , {
+                    Name = "\0";
+                    Parent = Items.Inner;
+                    BorderColor3 = rgb(0, 0, 0);
+                    Size = dim2(0, 3, 0, 3);
+                    BorderSizePixel = 0;
+                    BackgroundColor3 = rgb(0, 0, 0)
+                });
+                
+                Items.inline = Library:Create( "Frame" , {
+                    Parent = Items.SatValPicker;
+                    Name = "\0";
+                    Position = dim2(0, 1, 0, 1);
+                    BorderColor3 = rgb(0, 0, 0);
+                    Size = dim2(1, -2, 1, -2);
+                    BorderSizePixel = 0;
+                    BackgroundColor3 = rgb(255, 255, 255)
+                });
+                
+                Items.Saturation = Library:Create( "Frame" , {
+                    Parent = Items.Inner;
+                    Name = "\0";
+                    Size = dim2(1, 0, 1, 0);
+                    BorderColor3 = rgb(0, 0, 0);
+                    ZIndex = 2;
+                    BorderSizePixel = 0;
+                    BackgroundColor3 = rgb(255, 255, 255)
+                });
+                
+                Library:Create( "UIGradient" , {
+                    Rotation = 270;
+                    Transparency = numseq{numkey(0, 0), numkey(1, 1)};
+                    Parent = Items.Saturation;
+                    Color = rgbseq{rgbkey(0, rgb(0, 0, 0)), rgbkey(1, rgb(0, 0, 0))}
+                });
+                
+                Items.HexTextbox = Library:Create( "Frame" , {
+                    AnchorPoint = vec2(0, 1);
+                    Parent = Items.Pallete;
+                    Name = "\0";
+                    Position = dim2(0, 1, 1, 0);
+                    BorderColor3 = rgb(0, 0, 0);
+                    Size = dim2(1, -39, 0, 18);
+                    BorderSizePixel = 0;
+                    BackgroundColor3 = rgb(0, 0, 0)
+                });
+                
+                Items.Inline = Library:Create( "Frame" , {
+                    Parent = Items.HexTextbox;
+                    Name = "\0";
+                    Position = dim2(0, 1, 0, 1);
+                    BorderColor3 = rgb(0, 0, 0);
+                    Size = dim2(1, -2, 1, -2);
+                    BorderSizePixel = 0;
+                    BackgroundColor3 = themes.preset.inline
+                });	Library:Themify(Items.Inline, "inline", "BackgroundColor3")
+                
+                Items.Background = Library:Create( "Frame" , {
+                    Parent = Items.Inline;
+                    Name = "\0";
+                    Position = dim2(0, 1, 0, 1);
+                    BorderColor3 = rgb(0, 0, 0);
+                    Size = dim2(1, -2, 1, -2);
+                    BorderSizePixel = 0;
+                    BackgroundColor3 = themes.preset.background
+                });	Library:Themify(Items.Background, "background", "BackgroundColor3")
+                
+                Items.AlphaInput = Library:Create( "TextBox" , {
+                    FontFace = Font.new("rbxassetid://12187365364", Enum.FontWeight.SemiBold, Enum.FontStyle.Normal);
+                    Parent = Items.Background;
+                    TextColor3 = rgb(220, 220, 220);
+                    BorderColor3 = rgb(0, 0, 0);
+                    Text = "255, 255, 255, 0.5";
+                    Name = "\0";
+                    Size = dim2(1, 0, 1, 0);
+                    Selectable = false;
+                    BorderSizePixel = 0;
+                    BackgroundTransparency = 1;
+                    TextXAlignment = Enum.TextXAlignment.Left;
+                    Active = false;
+                    AutomaticSize = Enum.AutomaticSize.XY;
+                    TextSize = 14;
+                    BackgroundColor3 = rgb(255, 255, 255)
+                });
+                
+                Items.HueTextbox = Library:Create( "Frame" , {
+                    AnchorPoint = vec2(0, 1);
+                    Parent = Items.Pallete;
+                    Name = "\0";
+                    Position = dim2(0, 1, 1, -22);
+                    BorderColor3 = rgb(0, 0, 0);
+                    Size = dim2(1, -39, 0, 18);
+                    BorderSizePixel = 0;
+                    BackgroundColor3 = rgb(0, 0, 0)
+                });
+                
+                Items.Inline = Library:Create( "Frame" , {
+                    Parent = Items.HueTextbox;
+                    Name = "\0";
+                    Position = dim2(0, 1, 0, 1);
+                    BorderColor3 = rgb(0, 0, 0);
+                    Size = dim2(1, -2, 1, -2);
+                    BorderSizePixel = 0;
+                    BackgroundColor3 = themes.preset.inline
+                });	Library:Themify(Items.Inline, "inline", "BackgroundColor3")
+                
+                Items.Background = Library:Create( "Frame" , {
+                    Parent = Items.Inline;
+                    Name = "\0";
+                    Position = dim2(0, 1, 0, 1);
+                    BorderColor3 = rgb(0, 0, 0);
+                    Size = dim2(1, -2, 1, -2);
+                    BorderSizePixel = 0;
+                    BackgroundColor3 = themes.preset.background
+                });	Library:Themify(Items.Background, "background", "BackgroundColor3")
+                
+                Items.RGBInput = Library:Create( "TextBox" , {
+                    FontFace = Font.new("rbxassetid://12187365364", Enum.FontWeight.SemiBold, Enum.FontStyle.Normal);
+                    Parent = Items.Background;
+                    TextColor3 = rgb(220, 220, 220);
+                    BorderColor3 = rgb(0, 0, 0);
+                    Text = "255, 255, 255, 0.5";
+                    Name = "\0";
+                    Size = dim2(1, 0, 1, 0);
+                    Selectable = false;
+                    BorderSizePixel = 0;
+                    BackgroundTransparency = 1;
+                    Active = false;
+                    TextXAlignment = Enum.TextXAlignment.Left;
+                    AutomaticSize = Enum.AutomaticSize.XY;
+                    TextSize = 14;
+                    BackgroundColor3 = rgb(255, 255, 255)
+                });
+                
+                Items.Alpha = Library:Create( "TextButton" , {
+                    Active = false;
+                    BorderColor3 = rgb(0, 0, 0);
+                    Text = "";
+                    AutoButtonColor = false;
+                    AnchorPoint = vec2(1, 1);
+                    Parent = Items.Pallete;
+                    Name = "\0";
+                    Position = dim2(1, 2, 1, 0);
+                    Size = dim2(0, 16, 1, 0);
+                    Selectable = false;
+                    BorderSizePixel = 0;
+                    BackgroundColor3 = rgb(0, 0, 0)
+                });
+                
+                Items.Inline = Library:Create( "Frame" , {
+                    Parent = Items.Alpha;
+                    Name = "\0";
+                    Position = dim2(0, 1, 0, 1);
+                    BorderColor3 = rgb(0, 0, 0);
+                    Size = dim2(1, -2, 1, -2);
+                    BorderSizePixel = 0;
+                    BackgroundColor3 = themes.preset.inline
+                });	Library:Themify(Items.Inline, "inline", "BackgroundColor3")
+                
+                Items.Background = Library:Create( "Frame" , {
+                    Parent = Items.Inline;
+                    Name = "\0";
+                    Position = dim2(0, 1, 0, 1);
+                    BorderColor3 = rgb(0, 0, 0);
+                    Size = dim2(1, -2, 1, -2);
+                    BorderSizePixel = 0;
+                    BackgroundColor3 = rgb(255, 255, 255)
+                });
+                
+                Library:Create( "UIGradient" , {
+                    Rotation = 90;
+                    Parent = Items.Background;
+                    Color = rgbseq{rgbkey(0, rgb(255, 255, 255)), rgbkey(1, rgb(9, 9, 9))}
+                });
+                
+                Items.AlphaPicker = Library:Create( "Frame" , {
+                    Parent = Items.Background;
+                    Name = "\0";
+                    BorderMode = Enum.BorderMode.Inset;
+                    BorderColor3 = rgb(0, 0, 0);
+                    Size = dim2(1, 2, 0, 3);
+                    Position = dim2(0, -1, 0, -1);
+                    BackgroundColor3 = rgb(255, 255, 255)
+                });
+                
+                Items.RGB = Library:Create( "TextButton" , {
+                    Active = false;
+                    BorderColor3 = rgb(0, 0, 0);
+                    Text = "";
+                    AutoButtonColor = false;
+                    AnchorPoint = vec2(1, 1);
+                    Parent = Items.Pallete;
+                    Name = "\0";
+                    Position = dim2(1, -18, 1, 0);
+                    Size = dim2(0, 16, 1, 0);
+                    Selectable = false;
+                    BorderSizePixel = 0;
+                    BackgroundColor3 = rgb(0, 0, 0)
+                });
+                
+                Items.Inline = Library:Create( "Frame" , {
+                    Parent = Items.RGB;
+                    Name = "\0";
+                    Position = dim2(0, 1, 0, 1);
+                    BorderColor3 = rgb(0, 0, 0);
+                    Size = dim2(1, -2, 1, -2);
+                    BorderSizePixel = 0;
+                    BackgroundColor3 = themes.preset.inline
+                });	Library:Themify(Items.Inline, "inline", "BackgroundColor3")
+                
+                Items.hue_drag = Library:Create( "Frame" , {
+                    Parent = Items.Inline;
+                    Name = "\0";
+                    Position = dim2(0, 1, 0, 1);
+                    BorderColor3 = rgb(0, 0, 0);
+                    Size = dim2(1, -2, 1, -2);
+                    BorderSizePixel = 0;
+                    BackgroundColor3 = rgb(255, 255, 255)
+                });
+                
+                Library:Create( "UIGradient" , {
+                    Rotation = 90;
+                    Parent = Items.hue_drag;
+                    Color = rgbseq{rgbkey(0, rgb(255, 0, 0)), rgbkey(0.17, rgb(255, 255, 0)), rgbkey(0.33, rgb(0, 255, 0)), rgbkey(0.5, rgb(0, 255, 255)), rgbkey(0.67, rgb(0, 0, 255)), rgbkey(0.83, rgb(255, 0, 255)), rgbkey(1, rgb(255, 0, 0))}
+                });
+                
+                Items.HuePicker = Library:Create( "Frame" , {
+                    Parent = Items.hue_drag;
+                    Name = "\0";
+                    BorderMode = Enum.BorderMode.Inset;
+                    BorderColor3 = rgb(0, 0, 0);
+                    Size = dim2(1, 2, 0, 3);
+                    Position = dim2(0, -1, 0, -1);
+                    BackgroundColor3 = rgb(255, 255, 255)
+                });
+                
+                Library:Create( "UIPadding" , {
+                    PaddingTop = dim(0, 2);
+                    PaddingBottom = dim(0, 3);
+                    Parent = Items.Pallete;
+                    PaddingRight = dim(0, 3);
+                    PaddingLeft = dim(0, 2)
+                });
             end;
             
             function Cfg.SetVisible(bool)
@@ -862,7 +851,7 @@ getgenv().Loaded = true
                     Transparency = a 
                 }
                 
-                local Color = Items.ButtonColor.BackgroundColor3 -- Overwriting to format<<
+                local Color = Items.ButtonColor.BackgroundColor3
                 Items.RGBInput.Text = string.format("%s, %s, %s, ", Library:Round(Color.R * 255), Library:Round(Color.G * 255), Library:Round(Color.B * 255))
                 Items.RGBInput.Text ..= Library:Round(1 - a, 0.01)
                 
@@ -999,7 +988,7 @@ getgenv().Loaded = true
             table.insert(themes.utility[theme][property], instance)
         end
 
-        function Library:SaveGradient(instance, theme) -- instance, tabfill or background, color
+        function Library:SaveGradient(instance, theme)
             table.insert(themes.gradients[theme], instance)
         end
 
@@ -1032,6 +1021,15 @@ getgenv().Loaded = true
             Library.OpenElement.Open = false
 		end
 
+        function Library:CloseAllElements()
+            -- Close colorpicker
+            if Library.OpenElement and Library.OpenElement.SetVisible then
+                Library.OpenElement.SetVisible(false)
+                Library.OpenElement.Open = false
+                Library.OpenElement = {}
+            end
+        end
+
         function Library:Create(instance, options)
             local ins = Instance.new(instance) 
 
@@ -1054,6 +1052,14 @@ getgenv().Loaded = true
 
             if Library.Other then 
                 Library.Other:Destroy()
+            end
+
+            if Library.MobileToggleButton then
+                Library.MobileToggleButton:Destroy()
+            end
+
+            if Library.MobileLockButton then
+                Library.MobileLockButton:Destroy()
             end
             
             for _,connection in Library.Connections do 
@@ -1099,12 +1105,12 @@ getgenv().Loaded = true
                     Name = "\0";
                     BorderColor3 = rgb(0, 0, 0);
                     BorderSizePixel = 0;
-                    BackgroundColor3 = rgb(0, 0, 0)
+                    BackgroundColor3 = rgb(20, 20, 20)
                 }); Library:Themify(Items.Window, "window_outline", "BackgroundColor3");
                 
                 -- Mobile sizing
                 if IsMobile then
-                    Items.Window.Size = UDim2.new(0, Cfg.Size.X.Offset * 0.85, 0, Cfg.Size.Y.Offset * 0.8)
+                    Items.Window.Size = UDim2.new(0, Cfg.Size.X.Offset * 0.9, 0, Cfg.Size.Y.Offset * 0.75)
                     Items.Window.Position = UDim2.new(0.5, -Items.Window.Size.X.Offset / 2, 0.5, -Items.Window.Size.Y.Offset / 2)
                 else
                     Items.Window.Size = Cfg.Size
@@ -1118,7 +1124,7 @@ getgenv().Loaded = true
                     BorderColor3 = rgb(0, 0, 0);
                     ZIndex = 2;
                     BorderSizePixel = 0;
-                    BackgroundColor3 = rgb(0, 0, 0)
+                    BackgroundColor3 = rgb(20, 20, 20)
                 }); Library:Themify(Items.Outline, "window_outline", "BackgroundColor3")
                 
                 Items.Inline = Library:Create( "Frame" , {
@@ -1138,7 +1144,7 @@ getgenv().Loaded = true
                     BorderColor3 = rgb(0, 0, 0);
                     Size = dim2(0, 139, 1, -2);
                     BorderSizePixel = 0;
-                    BackgroundColor3 = rgb(12, 14, 14)
+                    BackgroundColor3 = rgb(30, 30, 30)
                 });
                 
                 Items.Filler = Library:Create( "Frame" , {
@@ -1244,7 +1250,7 @@ getgenv().Loaded = true
                     BorderColor3 = rgb(0, 0, 0);
                     Size = dim2(1, 0, 1, 0);
                     BorderSizePixel = 0;
-                    BackgroundColor3 = rgb(20, 18, 30);
+                    BackgroundColor3 = rgb(35, 35, 35);
                     ZIndex = 2;
                 });	Library:Themify(Items.Fade, "background", "BackgroundColor3")                
                 
@@ -1271,23 +1277,100 @@ getgenv().Loaded = true
                 Library:MobileDrag(Items.Window)
             end
 
+            -- Mobile buttons (separate from menu)
+            if IsMobile then
+                -- Toggle UI Button
+                Library.MobileToggleButton = Library:Create("TextButton", {
+                    Parent = Library.Items,
+                    Text = "",
+                    Name = "ToggleUI",
+                    Size = UDim2.new(0, 40, 0, 40),
+                    Position = UDim2.new(0, 10, 0, 10),
+                    BackgroundColor3 = rgb(35, 35, 35),
+                    BorderColor3 = rgb(147, 51, 234),
+                    BorderSizePixel = 1,
+                    AutoButtonColor = false,
+                })
+                
+                Library:Create("UICorner", {
+                    Parent = Library.MobileToggleButton,
+                    CornerRadius = UDim.new(0, 8)
+                })
+                
+                Library:Create("UIStroke", {
+                    Parent = Library.MobileToggleButton,
+                    Color = rgb(147, 51, 234),
+                    Thickness = 1,
+                    Transparency = 0.5
+                })
+                
+                local ToggleIcon = Library:Create("TextLabel", {
+                    Parent = Library.MobileToggleButton,
+                    Text = "📱",
+                    Size = UDim2.new(1, 0, 1, 0),
+                    BackgroundTransparency = 1,
+                    TextSize = 20,
+                    TextColor3 = rgb(220, 220, 220),
+                })
+                
+                Library.MobileToggleButton.MouseButton1Click:Connect(function()
+                    Cfg.ToggleMenu(not Cfg.Visible)
+                end)
+                
+                -- Lock UI Button
+                Library.MobileLockButton = Library:Create("TextButton", {
+                    Parent = Library.Items,
+                    Text = "",
+                    Name = "LockUI",
+                    Size = UDim2.new(0, 40, 0, 40),
+                    Position = UDim2.new(0, 55, 0, 10),
+                    BackgroundColor3 = rgb(35, 35, 35),
+                    BorderColor3 = rgb(147, 51, 234),
+                    BorderSizePixel = 1,
+                    AutoButtonColor = false,
+                })
+                
+                Library:Create("UICorner", {
+                    Parent = Library.MobileLockButton,
+                    CornerRadius = UDim.new(0, 8)
+                })
+                
+                Library:Create("UIStroke", {
+                    Parent = Library.MobileLockButton,
+                    Color = rgb(147, 51, 234),
+                    Thickness = 1,
+                    Transparency = 0.5
+                })
+                
+                local LockIcon = Library:Create("TextLabel", {
+                    Parent = Library.MobileLockButton,
+                    Text = "🔓",
+                    Size = UDim2.new(1, 0, 1, 0),
+                    BackgroundTransparency = 1,
+                    TextSize = 20,
+                    TextColor3 = rgb(220, 220, 220),
+                })
+                
+                Library.MobileLockButton.MouseButton1Click:Connect(function()
+                    Library.Locked = not Library.Locked
+                    Cfg.Locked = Library.Locked
+                    LockIcon.Text = Library.Locked and "🔒" or "🔓"
+                    
+                    if Library.Locked then
+                        Library.MobileLockButton.BorderColor3 = rgb(255, 100, 100)
+                        local stroke = Library.MobileLockButton:FindFirstChildOfClass("UIStroke")
+                        if stroke then stroke.Color = rgb(255, 100, 100) end
+                    else
+                        Library.MobileLockButton.BorderColor3 = rgb(147, 51, 234)
+                        local stroke = Library.MobileLockButton:FindFirstChildOfClass("UIStroke")
+                        if stroke then stroke.Color = rgb(147, 51, 234) end
+                    end
+                end)
+            end
+
             function Cfg.LockUI(bool)
                 Cfg.Locked = bool
-                if bool then
-                    local stroke = Items.Window:FindFirstChildOfClass("UIStroke")
-                    if not stroke then
-                        Library:Create("UIStroke", {
-                            Parent = Items.Window,
-                            Color = themes.preset.accent,
-                            Thickness = 2,
-                            Transparency = 0.5,
-                            ApplyStrokeMode = Enum.ApplyStrokeMode.Border
-                        })
-                    end
-                else
-                    local stroke = Items.Window:FindFirstChildOfClass("UIStroke")
-                    if stroke then stroke:Destroy() end
-                end
+                Library.Locked = bool
             end
 
             function Cfg.ToggleMenu(bool)
@@ -1320,6 +1403,9 @@ getgenv().Loaded = true
                         Cfg.Visible = true
                     end)
                 else
+                    -- Close any open elements first
+                    Library:CloseAllElements()
+                    
                     local Children = Items.Window:GetDescendants()
                     table.insert(Children, Items.Window)
                     
@@ -1349,10 +1435,6 @@ getgenv().Loaded = true
             function Cfg.ChangeMenuTitle(text)
                 Items.SectionTitle.Text = text
             end
-
-            function Cfg.ToggleKeybindList(bool)
-                Items.Keybind_List.Visible = bool
-            end
             
             return setmetatable(Cfg, Library)
         end 
@@ -1365,158 +1447,154 @@ getgenv().Loaded = true
             }
 
             local Items = Cfg.Items; do 
-                -- Tab buttons 
-                    Items.Button = Library:Create( "TextButton" , {
-                        Active = false;
-                        BorderColor3 = rgb(0, 0, 0);
-                        Text = "";
-                        AutoButtonColor = false;
-                        Parent = self.Items.TabHolder;
-                        BackgroundTransparency = 1;
-                        Name = "\0";
-                        Size = dim2(1, 0, 0, 30);
-                        Selectable = false;
-                        BorderSizePixel = 0;
-                        BackgroundColor3 = rgb(255, 255, 255)
-                    });
-                    
-                    Items.Holder = Library:Create( "Frame" , {
-                        Parent = Items.Button;
-                        Name = "\0";
-                        BackgroundTransparency = 1;
-                        Position = dim2(0, 6, 0, 0);
-                        BorderColor3 = rgb(0, 0, 0);
-                        Size = dim2(1, -13, 1, 0);
-                        BorderSizePixel = 0;
-                        BackgroundColor3 = themes.preset.visible_backgrounds
-                    });	Library:Themify(Items.Holder, "visible_backgrounds", "BackgroundColor3")
-                    
-                    Items.Icon = Library:Create( "ImageLabel" , {
-                        ImageColor3 = themes.preset.deselected;
-                        BorderColor3 = rgb(0, 0, 0);
-                        Parent = Items.Holder;
-                        Name = "\0";
-                        AnchorPoint = vec2(0, 0.5);
-                        Image = Cfg.Icon;
-                        BackgroundTransparency = 1;
-                        Position = dim2(0, 8, 0.5, 0);
-                        Size = dim2(0, 14, 0, 14);
-                        BorderSizePixel = 0;
-                        BackgroundColor3 = rgb(255, 255, 255)
-                    });	Library:Themify(Items.Icon, "deselected", "ImageColor3"); Library:Themify(Items.Icon, "accent", "ImageColor3")
-                    
-                    Items.SectionTitle = Library:Create( "TextLabel" , {
-                        FontFace = Font.new("rbxassetid://12187365364", Enum.FontWeight.Medium, Enum.FontStyle.Normal);
-                        TextColor3 = themes.preset.deselected;
-                        BorderColor3 = rgb(0, 0, 0);
-                        Text = Cfg.Name;
-                        Parent = Items.Holder;
-                        Name = "\0";
-                        AnchorPoint = vec2(0, 0.5);
-                        AutomaticSize = Enum.AutomaticSize.XY;
-                        BackgroundTransparency = 1;
-                        Position = dim2(0, 22, 0.5, 0);
-                        BorderSizePixel = 0;
-                        ZIndex = 2;
-                        TextSize = 14;
-                        BackgroundColor3 = rgb(12, 14, 14)
-                    });	Library:Themify(Items.SectionTitle, "text_color", "TextColor3") Library:Themify(Items.SectionTitle, "deselected", "TextColor3") 
-                    Items.SectionTitle.TextColor3 = themes.preset.deselected;
-                    Library:Create( "UIPadding" , {
-                        Parent = Items.SectionTitle;
-                        PaddingRight = dim(0, 8);
-                        PaddingLeft = dim(0, 8)
-                    });
-                    
-                    Items.Indicator = Library:Create( "ImageLabel" , {
-                        ImageColor3 = themes.preset.accent;
-                        ImageTransparency = 1;
-                        BackgroundTransparency = 1;
-                        BorderColor3 = rgb(0, 0, 0);
-                        Parent = Items.Button;
-                        AnchorPoint = vec2(0, 0.5);
-                        Image = "rbxassetid://126397903791071";
-                        Name = "\0";
-                        Position = dim2(0, 0, 0.5, 0);
-                        Size = dim2(0, 2, 0, 19);
-                        BorderSizePixel = 0;
-                        BackgroundColor3 = rgb(255, 255, 255)
-                    });	Library:Themify(Items.Indicator, "accent", "ImageColor3")                
-                -- 
+                Items.Button = Library:Create( "TextButton" , {
+                    Active = false;
+                    BorderColor3 = rgb(0, 0, 0);
+                    Text = "";
+                    AutoButtonColor = false;
+                    Parent = self.Items.TabHolder;
+                    BackgroundTransparency = 1;
+                    Name = "\0";
+                    Size = dim2(1, 0, 0, 30);
+                    Selectable = false;
+                    BorderSizePixel = 0;
+                    BackgroundColor3 = rgb(255, 255, 255)
+                });
+                
+                Items.Holder = Library:Create( "Frame" , {
+                    Parent = Items.Button;
+                    Name = "\0";
+                    BackgroundTransparency = 1;
+                    Position = dim2(0, 6, 0, 0);
+                    BorderColor3 = rgb(0, 0, 0);
+                    Size = dim2(1, -13, 1, 0);
+                    BorderSizePixel = 0;
+                    BackgroundColor3 = themes.preset.visible_backgrounds
+                });	Library:Themify(Items.Holder, "visible_backgrounds", "BackgroundColor3")
+                
+                Items.Icon = Library:Create( "ImageLabel" , {
+                    ImageColor3 = themes.preset.deselected;
+                    BorderColor3 = rgb(0, 0, 0);
+                    Parent = Items.Holder;
+                    Name = "\0";
+                    AnchorPoint = vec2(0, 0.5);
+                    Image = Cfg.Icon;
+                    BackgroundTransparency = 1;
+                    Position = dim2(0, 8, 0.5, 0);
+                    Size = dim2(0, 14, 0, 14);
+                    BorderSizePixel = 0;
+                    BackgroundColor3 = rgb(255, 255, 255)
+                });	Library:Themify(Items.Icon, "deselected", "ImageColor3"); Library:Themify(Items.Icon, "accent", "ImageColor3")
+                
+                Items.SectionTitle = Library:Create( "TextLabel" , {
+                    FontFace = Font.new("rbxassetid://12187365364", Enum.FontWeight.Medium, Enum.FontStyle.Normal);
+                    TextColor3 = themes.preset.deselected;
+                    BorderColor3 = rgb(0, 0, 0);
+                    Text = Cfg.Name;
+                    Parent = Items.Holder;
+                    Name = "\0";
+                    AnchorPoint = vec2(0, 0.5);
+                    AutomaticSize = Enum.AutomaticSize.XY;
+                    BackgroundTransparency = 1;
+                    Position = dim2(0, 22, 0.5, 0);
+                    BorderSizePixel = 0;
+                    ZIndex = 2;
+                    TextSize = 14;
+                    BackgroundColor3 = rgb(30, 30, 30)
+                });	Library:Themify(Items.SectionTitle, "text_color", "TextColor3") Library:Themify(Items.SectionTitle, "deselected", "TextColor3") 
+                Items.SectionTitle.TextColor3 = themes.preset.deselected;
+                Library:Create( "UIPadding" , {
+                    Parent = Items.SectionTitle;
+                    PaddingRight = dim(0, 8);
+                    PaddingLeft = dim(0, 8)
+                });
+                
+                Items.Indicator = Library:Create( "ImageLabel" , {
+                    ImageColor3 = themes.preset.accent;
+                    ImageTransparency = 1;
+                    BackgroundTransparency = 1;
+                    BorderColor3 = rgb(0, 0, 0);
+                    Parent = Items.Button;
+                    AnchorPoint = vec2(0, 0.5);
+                    Image = "rbxassetid://126397903791071";
+                    Name = "\0";
+                    Position = dim2(0, 0, 0.5, 0);
+                    Size = dim2(0, 2, 0, 19);
+                    BorderSizePixel = 0;
+                    BackgroundColor3 = rgb(255, 255, 255)
+                });	Library:Themify(Items.Indicator, "accent", "ImageColor3")                
 
-                -- Page directory 
-                    Items.Pages = Library:Create( "Frame" , {
-                        Parent = Library.Other;
-                        Visible = false;
-                        BackgroundTransparency = 1;
-                        Name = "\0";
-                        BorderColor3 = rgb(0, 0, 0);
-                        Size = dim2(1, 0, 1, 0);
-                        BorderSizePixel = 0;
-                        BackgroundColor3 = rgb(255, 255, 255)
-                    });
-                    
-                    Library:Create( "UIListLayout" , {
-                        FillDirection = Enum.FillDirection.Horizontal;
-                        HorizontalFlex = Enum.UIFlexAlignment.Fill;
-                        Parent = Items.Pages;
-                        Padding = dim(0, 6);
-                        SortOrder = Enum.SortOrder.LayoutOrder;
-                        VerticalFlex = Enum.UIFlexAlignment.Fill
-                    });
-                    
-                    Library:Create( "UIPadding" , {
-                        PaddingTop = dim(0, 6);
-                        PaddingBottom = dim(0, 6);
-                        Parent = Items.Pages;
-                        PaddingRight = dim(0, 6);
-                        PaddingLeft = dim(0, 6)
-                    });
-                    
-                    Items.Left = Library:Create( "ScrollingFrame" , {
-                        ScrollBarImageColor3 = rgb(0, 0, 0);
-                        Active = true;
-                        AutomaticCanvasSize = Enum.AutomaticSize.Y;
-                        ScrollBarThickness = 0;
-                        Parent = Items.Pages;
-                        Name = "\0";
-                        BackgroundTransparency = 1;
-                        Size = dim2(0, 100, 0, 100);
-                        BackgroundColor3 = rgb(255, 255, 255);
-                        BorderColor3 = rgb(0, 0, 0);
-                        BorderSizePixel = 0;
-                        CanvasSize = dim2(0, 0, 0, 0)
-                    });
-                    
-                    Library:Create( "UIListLayout" , {
-                        Parent = Items.Left;
-                        Padding = dim(0, 6);
-                        SortOrder = Enum.SortOrder.LayoutOrder;
-                        HorizontalFlex = Enum.UIFlexAlignment.Fill
-                    });
-                    
-                    Items.Right = Library:Create( "ScrollingFrame" , {
-                        ScrollBarImageColor3 = rgb(0, 0, 0);
-                        Active = true;
-                        AutomaticCanvasSize = Enum.AutomaticSize.Y;
-                        ScrollBarThickness = 0;
-                        Parent = Items.Pages;
-                        Name = "\0";
-                        BackgroundTransparency = 1;
-                        Size = dim2(0, 100, 0, 100);
-                        BackgroundColor3 = rgb(255, 255, 255);
-                        BorderColor3 = rgb(0, 0, 0);
-                        BorderSizePixel = 0;
-                        CanvasSize = dim2(0, 0, 0, 0)
-                    });
-                    
-                    Library:Create( "UIListLayout" , {
-                        Parent = Items.Right;
-                        Padding = dim(0, 6);
-                        SortOrder = Enum.SortOrder.LayoutOrder;
-                        HorizontalFlex = Enum.UIFlexAlignment.Fill
-                    });                
-                -- 
+                Items.Pages = Library:Create( "Frame" , {
+                    Parent = Library.Other;
+                    Visible = false;
+                    BackgroundTransparency = 1;
+                    Name = "\0";
+                    BorderColor3 = rgb(0, 0, 0);
+                    Size = dim2(1, 0, 1, 0);
+                    BorderSizePixel = 0;
+                    BackgroundColor3 = rgb(255, 255, 255)
+                });
+                
+                Library:Create( "UIListLayout" , {
+                    FillDirection = Enum.FillDirection.Horizontal;
+                    HorizontalFlex = Enum.UIFlexAlignment.Fill;
+                    Parent = Items.Pages;
+                    Padding = dim(0, 6);
+                    SortOrder = Enum.SortOrder.LayoutOrder;
+                    VerticalFlex = Enum.UIFlexAlignment.Fill
+                });
+                
+                Library:Create( "UIPadding" , {
+                    PaddingTop = dim(0, 6);
+                    PaddingBottom = dim(0, 6);
+                    Parent = Items.Pages;
+                    PaddingRight = dim(0, 6);
+                    PaddingLeft = dim(0, 6)
+                });
+                
+                Items.Left = Library:Create( "ScrollingFrame" , {
+                    ScrollBarImageColor3 = rgb(0, 0, 0);
+                    Active = true;
+                    AutomaticCanvasSize = Enum.AutomaticSize.Y;
+                    ScrollBarThickness = 0;
+                    Parent = Items.Pages;
+                    Name = "\0";
+                    BackgroundTransparency = 1;
+                    Size = dim2(0, 100, 0, 100);
+                    BackgroundColor3 = rgb(255, 255, 255);
+                    BorderColor3 = rgb(0, 0, 0);
+                    BorderSizePixel = 0;
+                    CanvasSize = dim2(0, 0, 0, 0)
+                });
+                
+                Library:Create( "UIListLayout" , {
+                    Parent = Items.Left;
+                    Padding = dim(0, 6);
+                    SortOrder = Enum.SortOrder.LayoutOrder;
+                    HorizontalFlex = Enum.UIFlexAlignment.Fill
+                });
+                
+                Items.Right = Library:Create( "ScrollingFrame" , {
+                    ScrollBarImageColor3 = rgb(0, 0, 0);
+                    Active = true;
+                    AutomaticCanvasSize = Enum.AutomaticSize.Y;
+                    ScrollBarThickness = 0;
+                    Parent = Items.Pages;
+                    Name = "\0";
+                    BackgroundTransparency = 1;
+                    Size = dim2(0, 100, 0, 100);
+                    BackgroundColor3 = rgb(255, 255, 255);
+                    BorderColor3 = rgb(0, 0, 0);
+                    BorderSizePixel = 0;
+                    CanvasSize = dim2(0, 0, 0, 0)
+                });
+                
+                Library:Create( "UIListLayout" , {
+                    Parent = Items.Right;
+                    Padding = dim(0, 6);
+                    SortOrder = Enum.SortOrder.LayoutOrder;
+                    HorizontalFlex = Enum.UIFlexAlignment.Fill
+                });                
             end 
 
             function Cfg.OpenTab() 
@@ -1532,8 +1610,11 @@ getgenv().Loaded = true
                     Tab.Pages.Parent = Library.Other
                 end
 
-                    self.Items.Fade.BackgroundTransparency = 0 
-                    Library:Tween(self.Items.Fade, {BackgroundTransparency = 1})
+                -- Close any open elements when switching tabs
+                Library:CloseAllElements()
+
+                self.Items.Fade.BackgroundTransparency = 0 
+                Library:Tween(self.Items.Fade, {BackgroundTransparency = 1})
 
                 Library:Tween(Items.Indicator, {ImageTransparency = 0})
                 Library:Tween(Items.Holder, {BackgroundTransparency = 0})
@@ -1588,7 +1669,7 @@ getgenv().Loaded = true
                 
                 Items.SectionTitle = Library:Create( "TextLabel" , {
                     FontFace = Font.new("rbxassetid://12187365364", Enum.FontWeight.SemiBold, Enum.FontStyle.Normal);
-                    TextColor3 = rgb(180, 160, 210);
+                    TextColor3 = rgb(180, 180, 180);
                     BorderColor3 = rgb(0, 0, 0);
                     Text = Cfg.Name;
                     Parent = Items.Inline;
@@ -1718,7 +1799,7 @@ getgenv().Loaded = true
                     BorderColor3 = rgb(0, 0, 0);
                     Size = dim2(0, 29, 0, 14);
                     BorderSizePixel = 0;
-                    BackgroundColor3 = rgb(30, 27, 45)
+                    BackgroundColor3 = rgb(45, 45, 45)
                 });
                 
                 Library:Create( "UICorner" , {
@@ -1732,7 +1813,7 @@ getgenv().Loaded = true
                     BorderColor3 = rgb(0, 0, 0);
                     Size = dim2(1, -2, 1, -2);
                     BorderSizePixel = 0;
-                    BackgroundColor3 = rgb(20, 18, 30)
+                    BackgroundColor3 = rgb(35, 35, 35)
                 });
                 
                 Library:Create( "UICorner" , {
@@ -1740,7 +1821,7 @@ getgenv().Loaded = true
                 });
                 
                 Library:Create( "UIGradient" , {
-                    Color = rgbseq{rgbkey(0, rgb(180, 160, 210)), rgbkey(1, rgb(180, 160, 210))};
+                    Color = rgbseq{rgbkey(0, rgb(180, 180, 180)), rgbkey(1, rgb(180, 180, 180))};
                     Parent = Items.Inline
                 });
                 
@@ -1752,7 +1833,7 @@ getgenv().Loaded = true
                     BorderColor3 = rgb(0, 0, 0);
                     Size = dim2(0, 8, 0, 8);
                     BorderSizePixel = 0;
-                    BackgroundColor3 = rgb(107, 92, 130)
+                    BackgroundColor3 = rgb(150, 150, 150)
                 });
                 
                 Library:Create( "UICorner" , {
@@ -1766,9 +1847,9 @@ getgenv().Loaded = true
 
                 Cfg.Callback(bool)
 
-                Library:Tween(Items.ToggleComponent, {BackgroundColor3 = bool and themes.preset.accent or themes.preset.inline})
-                Library:Tween(Items.Inline, {BackgroundColor3 = bool and themes.preset.accent or themes.preset.background})
-                Library:Tween(Items.Circle, {BackgroundColor3 = bool and rgb(255, 255, 255) or themes.preset.deselected, Position = bool and dim2(1, -10, 0.5, 0) or dim2(0, 2, 0.5, 0)})                
+                Library:Tween(Items.ToggleComponent, {BackgroundColor3 = bool and themes.preset.accent or rgb(45, 45, 45)})
+                Library:Tween(Items.Inline, {BackgroundColor3 = bool and themes.preset.accent or rgb(35, 35, 35)})
+                Library:Tween(Items.Circle, {BackgroundColor3 = bool and rgb(255, 255, 255) or rgb(150, 150, 150), Position = bool and dim2(1, -10, 0.5, 0) or dim2(0, 2, 0.5, 0)})                
             end
             
             Items.Toggle.MouseButton1Click:Connect(function()
@@ -1867,7 +1948,7 @@ getgenv().Loaded = true
                     Size = dim2(1, 0, 0, 7);
                     Selectable = false;
                     BorderSizePixel = 0;
-                    BackgroundColor3 = rgb(12, 14, 14)
+                    BackgroundColor3 = rgb(30, 30, 30)
                 });
                 
                 Items.Fill = Library:Create( "Frame" , {
@@ -1998,11 +2079,11 @@ getgenv().Loaded = true
                     BorderColor3 = rgb(0, 0, 0);
                     Size = dim2(1, -2, 1, -2);
                     BorderSizePixel = 0;
-                    BackgroundColor3 = rgb(30, 27, 45)
+                    BackgroundColor3 = rgb(45, 45, 45)
                 });
                 
                 Items.Arrow = Library:Create( "ImageLabel" , {
-                    ImageColor3 = rgb(219, 222, 221);
+                    ImageColor3 = rgb(220, 220, 220);
                     BorderColor3 = rgb(0, 0, 0);
                     Parent = Items.Inline;
                     Name = "\0";
@@ -2051,7 +2132,7 @@ getgenv().Loaded = true
                     BorderColor3 = rgb(0, 0, 0);
                     BorderSizePixel = 0;
                     AutomaticSize = Enum.AutomaticSize.Y;
-                    BackgroundColor3 = rgb(30, 27, 45)
+                    BackgroundColor3 = rgb(45, 45, 45)
                 });
                 
                 Library:Create( "UIListLayout" , {
@@ -2261,6 +2342,7 @@ getgenv().Loaded = true
             local Items = Picker.Items; do
                 Cfg.Items = Items
                 Cfg.Set = Picker.Set
+                Cfg.SetVisible = Picker.SetVisible
             end;
             
             Cfg.Set(Cfg.Color, Cfg.Alpha)
@@ -2316,7 +2398,7 @@ getgenv().Loaded = true
                     BorderColor3 = rgb(0, 0, 0);
                     Size = dim2(1, 0, 0, 20);
                     BorderSizePixel = 0;
-                    BackgroundColor3 = rgb(30, 27, 45)
+                    BackgroundColor3 = rgb(45, 45, 45)
                 });
                 
                 Items.Inline = Library:Create( "Frame" , {
@@ -2326,7 +2408,7 @@ getgenv().Loaded = true
                     BorderColor3 = rgb(0, 0, 0);
                     Size = dim2(1, -2, 1, -2);
                     BorderSizePixel = 0;
-                    BackgroundColor3 = rgb(30, 27, 45)
+                    BackgroundColor3 = rgb(45, 45, 45)
                 });
                 
                 Items.Input = Library:Create( "TextBox" , {
@@ -2335,7 +2417,7 @@ getgenv().Loaded = true
                     Name = "\0";
                     Active = false;
                     BorderColor3 = rgb(0, 0, 0);
-                    Text = "hello theree!!";
+                    Text = Cfg.PlaceHolder;
                     Size = dim2(1, 0, 1, 0);
                     Selectable = false;
                     Position = dim2(0, 3, 0, 0);
@@ -2344,7 +2426,7 @@ getgenv().Loaded = true
                     BackgroundTransparency = 1;
                     TextXAlignment = Enum.TextXAlignment.Left;
                     AutomaticSize = Enum.AutomaticSize.XY;
-                    TextColor3 = rgb(239, 239, 239);
+                    TextColor3 = rgb(220, 220, 220);
                     TextSize = 14;
                     BackgroundColor3 = rgb(255, 255, 255)
                 });                    
@@ -2362,8 +2444,8 @@ getgenv().Loaded = true
                 Cfg.Set(Items.Input.Text) 
             end) 
 
-            if Cfg.default then 
-                Cfg.Set(Cfg.default) 
+            if Cfg.Default then 
+                Cfg.Set(Cfg.Default) 
             end
 
             ConfigFlags[Cfg.Flag] = Cfg.Set
@@ -2404,7 +2486,7 @@ getgenv().Loaded = true
                     Selectable = false;
                     BorderSizePixel = 0;
                     AutomaticSize = Enum.AutomaticSize.X;
-                    BackgroundColor3 = rgb(30, 27, 45)
+                    BackgroundColor3 = rgb(45, 45, 45)
                 });
                 
                 Items.ButtonColor = Library:Create( "Frame" , {
@@ -2415,7 +2497,7 @@ getgenv().Loaded = true
                     BorderColor3 = rgb(0, 0, 0);
                     BorderSizePixel = 0;
                     AutomaticSize = Enum.AutomaticSize.X;
-                    BackgroundColor3 = rgb(30, 27, 45)
+                    BackgroundColor3 = rgb(45, 45, 45)
                 });
                 
                 Library:Create( "UICorner" , {
@@ -2545,17 +2627,6 @@ getgenv().Loaded = true
 
                 Items.Key.Text = " " .. __text .. " "
 
-                if Items.Keybinds then
-                    Items.Keybinds.TextTransparency = 1
-                    Library:Tween(Items.Keybinds, {TextTransparency = 0})
-
-                    Items.KeybindsStroke.Transparency = 1
-                    Library:Tween(Items.KeybindsStroke, {Transparency = 0})
-
-                    Items.Keybinds.Visible = Cfg.Active
-                    Items.Keybinds.Text = string.format("[%s]: %s", __text, Cfg.Name or Cfg.Flag or "Key")
-                end 
-
                 Flags[Cfg.Flag] = {
                     mode = Cfg.Mode,
                     key = Cfg.Key, 
@@ -2634,7 +2705,7 @@ getgenv().Loaded = true
         
         function Library:Button(properties) 
             local Cfg = {
-                Name = properties.Name or "TextBox",
+                Name = properties.Name or "Button",
                 Callback = properties.Callback or function() end,
                 Items = {};
             }
@@ -2661,7 +2732,7 @@ getgenv().Loaded = true
                     Size = dim2(1, 0, 0, 20);
                     Selectable = false;
                     BorderSizePixel = 0;
-                    BackgroundColor3 = rgb(30, 27, 45)
+                    BackgroundColor3 = rgb(45, 45, 45)
                 });
                 
                 Items.Inline = Library:Create( "Frame" , {
@@ -2671,7 +2742,7 @@ getgenv().Loaded = true
                     BorderColor3 = rgb(0, 0, 0);
                     Size = dim2(1, -2, 1, -2);
                     BorderSizePixel = 0;
-                    BackgroundColor3 = rgb(30, 27, 45)
+                    BackgroundColor3 = rgb(45, 45, 45)
                 });
                 
                 Items.Title = Library:Create( "TextLabel" , {
@@ -2703,30 +2774,24 @@ getgenv().Loaded = true
         end
 
         function Library:Configs(window) 
-            local Text;
             local Tab = window:Tab({Name = "Settings"})
 
             local Section = Tab:Section({Name = "Main", Side = "Left"})
             ConfigHolder = Section:Dropdown({Name = "Configs", Options = {"Report", "This", "Error", "To", "Finobe"}, Callback = function(option) if Text then Text.Set(option) end end, Flag = "config_Name_list"}); Library:UpdateConfigList()
-            Section:Textbox({Name = "Config Name:", Flag = "config_Name_text", default = ""})
-            Section:Button({Name = "Save", Callback = function() if Flags["config_Name_text"] == "" then return end writefile(Library.Directory .. "/configs/" .. Flags["config_Name_text"] .. ".cfg", Library:GetConfig()) Library:UpdateConfigList() Notifications:Create({Name = "Saved Config (" ..  Library.Directory .. "/configs/" .. Flags["config_Name_text"] .. ".cfg" .. ")"}) end})
-            Section:Button({Name = "Load", Callback = function() if Flags["config_Name_text"] == "" then return end Library:LoadConfig(readfile(Library.Directory .. "/configs/" .. Flags["config_Name_text"] .. ".cfg")) Library:UpdateConfigList() Notifications:Create({Name = "Loaded Config (" ..  Library.Directory .. "/configs/" .. Flags["config_Name_text"] .. ".cfg" .. ")"}) end})
-            Section:Button({Name = "Delete", Callback = function() if Flags["config_Name_text"] == "" then return end delfile(Library.Directory .. "/configs/" .. Flags["config_Name_text"] .. ".cfg") Library:UpdateConfigList() Notifications:Create({Name = "Deleted Config (" ..  Library.Directory .. "/configs/" .. Flags["config_Name_text"] .. ".cfg" .. ")"}) end})
+            Section:Textbox({Name = "Config Name:", Flag = "config_Name_text", Default = ""})
+            Section:Button({Name = "Save", Callback = function() if Flags["config_Name_text"] == "" then return end writefile(Library.Directory .. "/configs/" .. Flags["config_Name_text"] .. ".cfg", Library:GetConfig()) Library:UpdateConfigList() Notifications:Create({Name = "Saved Config"}) end})
+            Section:Button({Name = "Load", Callback = function() if Flags["config_Name_text"] == "" then return end Library:LoadConfig(readfile(Library.Directory .. "/configs/" .. Flags["config_Name_text"] .. ".cfg")) Library:UpdateConfigList() Notifications:Create({Name = "Loaded Config"}) end})
+            Section:Button({Name = "Delete", Callback = function() if Flags["config_Name_text"] == "" then return end delfile(Library.Directory .. "/configs/" .. Flags["config_Name_text"] .. ".cfg") Library:UpdateConfigList() Notifications:Create({Name = "Deleted Config"}) end})
 
-            local Section = Tab:Section({Name = "Other", Side = "Right"})
-            Section:Label({Name = "Accent Color"}):Colorpicker({Callback = function(color, alpha) Library:RefreshTheme("accent", color) end, Color = themes.preset.accent})
-            Section:Label({Name = "Window Outline"}):Colorpicker({Callback = function(color, alpha) Library:RefreshTheme("window_outline", color) end, Color = themes.preset.window_outline})
-            Section:Label({Name = "Inline Elements"}):Colorpicker({Callback = function(color, alpha) Library:RefreshTheme("inline", color) end, Color = themes.preset.inline})
-            Section:Label({Name = "Main Background"}):Colorpicker({Callback = function(color, alpha) Library:RefreshTheme("background", color) end, Color = themes.preset.background})
-            Section:Label({Name = "Visible Backgrounds"}):Colorpicker({Callback = function(color, alpha) Library:RefreshTheme("visible_backgrounds", color) end, Color = themes.preset.visible_backgrounds})
-            Section:Label({Name = "Text Color"}):Colorpicker({Callback = function(color, alpha) Library:RefreshTheme("text_color", color) end, Color = themes.preset.text_color})
-            Section:Label({Name = "Glow Effect"}):Colorpicker({Callback = function(color, alpha) Library:RefreshTheme("glow", color) end, Color = themes.preset.glow})
-            Section:Label({Name = "Deselected Elements"}):Colorpicker({Callback = function(color, alpha) Library:RefreshTheme("deselected", color) end, Color = themes.preset.deselected})
-
-            -- Mobile Controls
-            local MobileSection = Tab:Section({Name = "Mobile", Side = "Left"})
-            MobileSection:Button({Name = "Toggle UI", Callback = function() window.ToggleMenu(not window.Visible) end})
-            MobileSection:Button({Name = "Lock UI", Callback = function() window.LockUI(not window.Locked) end})
+            local Section2 = Tab:Section({Name = "Other", Side = "Right"})
+            Section2:Label({Name = "Accent Color"}):Colorpicker({Callback = function(color, alpha) Library:RefreshTheme("accent", color) end, Color = themes.preset.accent})
+            Section2:Label({Name = "Window Outline"}):Colorpicker({Callback = function(color, alpha) Library:RefreshTheme("window_outline", color) end, Color = themes.preset.window_outline})
+            Section2:Label({Name = "Inline Elements"}):Colorpicker({Callback = function(color, alpha) Library:RefreshTheme("inline", color) end, Color = themes.preset.inline})
+            Section2:Label({Name = "Main Background"}):Colorpicker({Callback = function(color, alpha) Library:RefreshTheme("background", color) end, Color = themes.preset.background})
+            Section2:Label({Name = "Visible Backgrounds"}):Colorpicker({Callback = function(color, alpha) Library:RefreshTheme("visible_backgrounds", color) end, Color = themes.preset.visible_backgrounds})
+            Section2:Label({Name = "Text Color"}):Colorpicker({Callback = function(color, alpha) Library:RefreshTheme("text_color", color) end, Color = themes.preset.text_color})
+            Section2:Label({Name = "Glow Effect"}):Colorpicker({Callback = function(color, alpha) Library:RefreshTheme("glow", color) end, Color = themes.preset.glow})
+            Section2:Label({Name = "Deselected Elements"}):Colorpicker({Callback = function(color, alpha) Library:RefreshTheme("deselected", color) end, Color = themes.preset.deselected})
 
             window.Tweening = true
             Section:Label({Name = "Menu Bind"}):Keybind({Name = "Menu Bind", Callback = function(bool) 
