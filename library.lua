@@ -80,8 +80,7 @@ local Library do
         },
 
         FadeSpeed = 0.2,
-        GlowTransparency = 0.35,
-        GlowBlur = 0.5,
+        GlowTransparency = 0.65,
 
         -- Ignore below
         Pages = { },
@@ -1347,42 +1346,6 @@ local Library do
         return Library:CompareVectors(Top, BoundryTop) or Library:CompareVectors(BoundryBottom, Bottom)
     end
 
-    -- Improved Glow Effect
-    Library.CreateGlow = function(self, Parent)
-        local Glow = Instances:Create("ImageLabel", {
-            Parent = Parent,
-            Name = "\0",
-            AnchorPoint = Vector2New(0.5, 0.5),
-            BackgroundTransparency = 1,
-            Image = "rbxassetid://18245826428",
-            ImageColor3 = FromRGB(184, 212, 255),
-            ImageTransparency = Library.GlowTransparency,
-            Position = UDim2New(0.5, 0, 0.5, 0),
-            ScaleType = Enum.ScaleType.Slice,
-            Size = UDim2New(1, 48, 1, 48),
-            SliceCenter = RectNew(Vector2New(21, 21), Vector2New(79, 79)),
-            ZIndex = 0
-        })  Glow:AddToTheme({ImageColor3 = "Accent"})
-
-        -- Add a secondary glow for more depth
-        local Glow2 = Instances:Create("ImageLabel", {
-            Parent = Parent,
-            Name = "\0",
-            AnchorPoint = Vector2New(0.5, 0.5),
-            BackgroundTransparency = 1,
-            Image = "rbxassetid://18245826428",
-            ImageColor3 = FromRGB(184, 212, 255),
-            ImageTransparency = Library.GlowTransparency + 0.3,
-            Position = UDim2New(0.5, 0, 0.5, 0),
-            ScaleType = Enum.ScaleType.Slice,
-            Size = UDim2New(1, 60, 1, 60),
-            SliceCenter = RectNew(Vector2New(21, 21), Vector2New(79, 79)),
-            ZIndex = -1
-        })  Glow2:AddToTheme({ImageColor3 = "Accent"})
-
-        return { Glow, Glow2 }
-    end
-
     do
         Library.CreateColorpicker = function(self, Data)
             local Colorpicker = {
@@ -2548,38 +2511,22 @@ local Library do
                 Items["MainFrame"]:MakeDraggable()
                 Items["MainFrame"]:MakeResizeable(Vector2New(Items["MainFrame"].Instance.AbsoluteSize.X, Items["MainFrame"].Instance.AbsoluteSize.Y), Vector2New(9999, 9999))
                 
-                -- Enhanced Glow Effect
-                local Glow1 = Instances:Create("ImageLabel", {
+                -- Glow Effect (Inferno style)
+                Items["Glow"] = Instances:Create("ImageLabel", {
                     Parent = Items["MainFrame"].Instance,
                     Name = "\0",
-                    AnchorPoint = Vector2New(0.5, 0.5),
-                    BackgroundTransparency = 1,
-                    Image = "rbxassetid://18245826428",
-                    ImageColor3 = FromRGB(184, 212, 255),
-                    ImageTransparency = Library.GlowTransparency,
-                    Position = UDim2New(0.5, 0, 0.5, 0),
+                    ImageColor3 = FromRGB(0, 0, 0),
                     ScaleType = Enum.ScaleType.Slice,
-                    Size = UDim2New(1, 48, 1, 48),
-                    SliceCenter = RectNew(Vector2New(21, 21), Vector2New(79, 79)),
-                    ZIndex = 0
-                })  Glow1:AddToTheme({ImageColor3 = "Accent"})
-
-                local Glow2 = Instances:Create("ImageLabel", {
-                    Parent = Items["MainFrame"].Instance,
-                    Name = "\0",
-                    AnchorPoint = Vector2New(0.5, 0.5),
-                    BackgroundTransparency = 1,
+                    ImageTransparency = 0.65,
+                    BorderColor3 = FromRGB(0, 0, 0),
+                    Size = UDim2New(1, 40, 1, 40),
                     Image = "rbxassetid://18245826428",
-                    ImageColor3 = FromRGB(184, 212, 255),
-                    ImageTransparency = Library.GlowTransparency + 0.25,
-                    Position = UDim2New(0.5, 0, 0.5, 0),
-                    ScaleType = Enum.ScaleType.Slice,
-                    Size = UDim2New(1, 60, 1, 60),
-                    SliceCenter = RectNew(Vector2New(21, 21), Vector2New(79, 79)),
-                    ZIndex = -1
-                })  Glow2:AddToTheme({ImageColor3 = "Accent"})
-
-                Items["GlowEffect"] = { Glow1, Glow2 }
+                    BackgroundTransparency = 1,
+                    Position = UDim2New(0, -20, 0, -20),
+                    BackgroundColor3 = FromRGB(255, 255, 255),
+                    BorderSizePixel = 0,
+                    SliceCenter = RectNew(Vector2New(21, 21), Vector2New(79, 79))
+                })  Items["Glow"]:AddToTheme({ImageColor3 = "Outline"})
                 
                 Instances:Create("UICorner", {
                     Parent = Items["MainFrame"].Instance,
@@ -2980,13 +2927,13 @@ local Library do
                     end)
                 end)
 
-local Settings = {
-    IsOpen = false,
-    Name = ""..#Library.Sections,
-    Items = { },
-    IsSettings = true,
-    Elements = { }
-}
+                local Settings = {
+                    IsOpen = false,
+                    Name = ""..#Library.Sections,
+                    Items = { },
+                    IsSettings = true,
+                    Elements = { }
+                }
     
                 local SettingsItems = { }
                 do
@@ -3736,7 +3683,7 @@ local Settings = {
                     if Items["SeparatorLine"] then
                         Items["SeparatorLine"].Instance.Visible = Section.IsOpen
                     end
-                    Items["Chevron"]:Tween(nil, {Rotation = Section.IsOpen and 90 or 0})
+                    Items["Chevron"]:Tween(TweenInfo.new(0.3, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), {Rotation = Section.IsOpen and 90 or 0})
                     Items["Padding"].Instance.PaddingBottom = UDimNew(0, Section.IsOpen and 10 or 0)
                 end
                 
@@ -3752,7 +3699,7 @@ local Settings = {
             return setmetatable(Section, Library.Sections)
         end
 
-        -- Improved Slider with rounded corners and better visuals
+        -- Improved Slider with rounded corners
         Library.Sections.Slider = function(self, Data)
             Data = Data or { }
 
@@ -4474,6 +4421,7 @@ local Settings = {
             return Dropdown
         end
 
+        -- Searchable Dropdown with animation
         Library.Sections.SearchableDropdown = function(self, Data)
             Data = Data or { }
 
@@ -5237,6 +5185,14 @@ local Settings = {
                     CornerRadius = UDimNew(0, 5)
                 })
                 
+                Instances:Create("UIStroke", {
+                    Parent = Items["Indicator"].Instance,
+                    Name = "\0",
+                    Color = FromRGB(50, 50, 50),
+                    Thickness = 1,
+                    ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+                }):AddToTheme({Color = "Outline"})
+                
                 Items["Accent"] = Instances:Create("Frame", {
                     Parent = Items["Indicator"].Instance,
                     Name = "\0",
@@ -5804,10 +5760,8 @@ local Settings = {
                 Decimals = 0.01,
                 Callback = function(Value)
                     Library.GlowTransparency = Value
-                    if Window.Items and Window.Items["GlowEffect"] then
-                        for _, glow in Window.Items["GlowEffect"] do
-                            glow.Instance.ImageTransparency = Value + (glow.Instance.Size.X.Offset > 50 and 0.25 or 0)
-                        end
+                    if Window.Items and Window.Items["Glow"] then
+                        Window.Items["Glow"].Instance.ImageTransparency = Value
                     end
                 end
             })
@@ -5819,6 +5773,7 @@ local Settings = {
                 Flag = "Theme",
                 Items = ThemeNames,
                 Multi = false,
+                MaxSize = 150,
                 Callback = function(Value)
                     if Library.Themes[Value] then
                         for k, v in pairs(Library.Themes[Value]) do
