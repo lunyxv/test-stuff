@@ -1,2927 +1,2574 @@
---[[
+if getgenv().Loaded then getgenv().Library:Unload() end
+getgenv().Loaded = true
 
-    XEZIOS
-    -> Made by @finobe 
-    -> Kind of got bored idk what to do with life
-    -> Mobile Support Added
-    -> Fixed Theme
-]]
+local InputService = game:GetService("UserInputService")
+local HttpService = game:GetService("HttpService")
+local GuiService = game:GetService("GuiService")
+local RunService = game:GetService("RunService")
+local CoreGui = game:GetService("CoreGui")
+local TweenService = game:GetService("TweenService")
+local Workspace = game:GetService("Workspace")
+local Players = game:GetService("Players")
 
-if getgenv().Loaded then 
-    getgenv().Library:Unload()
-end 
+local Camera = Workspace.CurrentCamera
+local LocalPlayer = Players.LocalPlayer
+local Mouse = LocalPlayer:GetMouse()
+local GuiInset = GuiService:GetGuiInset().Y
+local IsMobile = InputService.TouchEnabled and not InputService.KeyboardEnabled
 
-getgenv().Loaded = true 
+local vec2 = Vector2.new
+local vec3 = Vector3.new
+local dim2 = UDim2.new
+local dim = UDim.new
+local rect = Rect.new
+local dim_offset = UDim2.fromOffset
+local color = Color3.new
+local rgb = Color3.fromRGB
+local hex = Color3.fromHex
+local hsv = Color3.fromHSV
+local rgbseq = ColorSequence.new
+local rgbkey = ColorSequenceKeypoint.new
+local numseq = NumberSequence.new
+local numkey = NumberSequenceKeypoint.new
 
--- Variables 
-    -- Services
-    local InputService, HttpService, GuiService, RunService, Stats, CoreGui, TweenService, SoundService, Workspace, Players = game:GetService("UserInputService"), game:GetService("HttpService"), game:GetService("GuiService"), game:GetService("RunService"), game:GetService("Stats"), game:GetService("CoreGui"), game:GetService("TweenService"), game:GetService("SoundService"), game:GetService("Workspace"), game:GetService("Players")
-    local Camera, lp, gui_offset = Workspace.CurrentCamera, Players.LocalPlayer, GuiService:GetGuiInset().Y
-    local mouse = lp:GetMouse()
-    local IsMobile = InputService.TouchEnabled and not InputService.KeyboardEnabled
+local Library = {
+    Directory = "repent.cc",
+    Folders = {"/fonts", "/configs"},
+    Flags = {},
+    ConfigFlags = {},
+    Connections = {},
+    Notifications = {Notifs = {}},
+    OpenElement = {},
+    Locked = false,
+}
 
-    -- Data types
-    local vec2, vec3, dim2, dim, rect, dim_offset = Vector2.new, Vector3.new, UDim2.new, UDim.new, Rect.new, UDim2.fromOffset
+getgenv().Library = Library
 
-    -- Extra data types
-    local color, rgb, hex, hsv, rgbseq, rgbkey, numseq, numkey = Color3.new, Color3.fromRGB, Color3.fromHex, Color3.fromHSV, ColorSequence.new, ColorSequenceKeypoint.new, NumberSequence.new, NumberSequenceKeypoint.new
--- 
+local Theme = {
+    accent = rgb(147, 51, 234),
+    window_outline = rgb(15, 15, 15),
+    inline = rgb(35, 35, 35),
+    background = rgb(25, 25, 25),
+    visible_backgrounds = rgb(30, 30, 30),
+    text_color = rgb(220, 220, 220),
+    glow = rgb(147, 51, 234),
+    deselected = rgb(140, 140, 140),
+}
 
--- Library init
-    getgenv().Library = {
-        Directory = "xezios",
-        Folders = {
-            "/fonts",
-            "/configs",
-        },
-        Flags = {},
-        ConfigFlags = {},
-        Connections = {},   
-        Notifications = {Notifs = {}},
-        OpenElement = {},
-        Locked = false,
-    }
+local ThemeObjects = {
+    accent = {BackgroundColor3 = {}, TextColor3 = {}, ImageColor3 = {}},
+    window_outline = {BackgroundColor3 = {}, TextColor3 = {}, ImageColor3 = {}},
+    inline = {BackgroundColor3 = {}, TextColor3 = {}, ImageColor3 = {}},
+    background = {BackgroundColor3 = {}, TextColor3 = {}, ImageColor3 = {}},
+    visible_backgrounds = {BackgroundColor3 = {}, TextColor3 = {}, ImageColor3 = {}},
+    text_color = {BackgroundColor3 = {}, TextColor3 = {}, ImageColor3 = {}},
+    glow = {BackgroundColor3 = {}, TextColor3 = {}, ImageColor3 = {}},
+    deselected = {BackgroundColor3 = {}, TextColor3 = {}, ImageColor3 = {}},
+}
 
-    local themes = {
-        preset = {
-            accent = rgb(147, 51, 234),
-            window_outline = rgb(20, 20, 20),
-            inline = rgb(45, 45, 45),
-            background = rgb(35, 35, 35),
-            visible_backgrounds = rgb(40, 40, 40),
-            text_color = rgb(220, 220, 220),
-            glow = rgb(147, 51, 234),
-            deselected = rgb(150, 150, 150),
-        },
-        utility = {},
-        gradients = {
-            Selected = {};
-            Deselected = {};
-        },
-    }
+local KeyNames = {
+    [Enum.KeyCode.LeftShift] = "LS",
+    [Enum.KeyCode.RightShift] = "RS",
+    [Enum.KeyCode.LeftControl] = "LC",
+    [Enum.KeyCode.RightControl] = "RC",
+    [Enum.KeyCode.Insert] = "INS",
+    [Enum.KeyCode.Backspace] = "BS",
+    [Enum.KeyCode.Return] = "Ent",
+    [Enum.KeyCode.LeftAlt] = "LA",
+    [Enum.KeyCode.RightAlt] = "RA",
+    [Enum.KeyCode.CapsLock] = "CAPS",
+    [Enum.KeyCode.One] = "1",
+    [Enum.KeyCode.Two] = "2",
+    [Enum.KeyCode.Three] = "3",
+    [Enum.KeyCode.Four] = "4",
+    [Enum.KeyCode.Five] = "5",
+    [Enum.KeyCode.Six] = "6",
+    [Enum.KeyCode.Seven] = "7",
+    [Enum.KeyCode.Eight] = "8",
+    [Enum.KeyCode.Nine] = "9",
+    [Enum.KeyCode.Zero] = "0",
+    [Enum.KeyCode.Minus] = "-",
+    [Enum.KeyCode.Equals] = "=",
+    [Enum.KeyCode.Tilde] = "~",
+    [Enum.KeyCode.LeftBracket] = "[",
+    [Enum.KeyCode.RightBracket] = "]",
+    [Enum.KeyCode.Semicolon] = ",",
+    [Enum.KeyCode.Quote] = "'",
+    [Enum.KeyCode.BackSlash] = "\\",
+    [Enum.KeyCode.Comma] = ",",
+    [Enum.KeyCode.Period] = ".",
+    [Enum.KeyCode.Slash] = "/",
+    [Enum.KeyCode.Asterisk] = "*",
+    [Enum.KeyCode.Plus] = "+",
+    [Enum.KeyCode.Backquote] = "`",
+    [Enum.UserInputType.MouseButton1] = "MB1",
+    [Enum.UserInputType.MouseButton2] = "MB2",
+    [Enum.UserInputType.MouseButton3] = "MB3",
+    [Enum.KeyCode.Escape] = "ESC",
+    [Enum.KeyCode.Space] = "SPC",
+}
 
-    for theme,color in themes.preset do 
-        themes.utility[theme] = {
-            BackgroundColor3 = {}; 	
-            TextColor3 = {};
-            ImageColor3 = {};
-            ScrollBarImageColor3 = {};
-            Color = {};
-        }
-    end 
+Library.__index = Library
 
-    local Keys = {
-        [Enum.KeyCode.LeftShift] = "LS",
-        [Enum.KeyCode.RightShift] = "RS",
-        [Enum.KeyCode.LeftControl] = "LC",
-        [Enum.KeyCode.RightControl] = "RC",
-        [Enum.KeyCode.Insert] = "INS",
-        [Enum.KeyCode.Backspace] = "BS",
-        [Enum.KeyCode.Return] = "Ent",
-        [Enum.KeyCode.LeftAlt] = "LA",
-        [Enum.KeyCode.RightAlt] = "RA",
-        [Enum.KeyCode.CapsLock] = "CAPS",
-        [Enum.KeyCode.One] = "1",
-        [Enum.KeyCode.Two] = "2",
-        [Enum.KeyCode.Three] = "3",
-        [Enum.KeyCode.Four] = "4",
-        [Enum.KeyCode.Five] = "5",
-        [Enum.KeyCode.Six] = "6",
-        [Enum.KeyCode.Seven] = "7",
-        [Enum.KeyCode.Eight] = "8",
-        [Enum.KeyCode.Nine] = "9",
-        [Enum.KeyCode.Zero] = "0",
-        [Enum.KeyCode.KeypadOne] = "Num1",
-        [Enum.KeyCode.KeypadTwo] = "Num2",
-        [Enum.KeyCode.KeypadThree] = "Num3",
-        [Enum.KeyCode.KeypadFour] = "Num4",
-        [Enum.KeyCode.KeypadFive] = "Num5",
-        [Enum.KeyCode.KeypadSix] = "Num6",
-        [Enum.KeyCode.KeypadSeven] = "Num7",
-        [Enum.KeyCode.KeypadEight] = "Num8",
-        [Enum.KeyCode.KeypadNine] = "Num9",
-        [Enum.KeyCode.KeypadZero] = "Num0",
-        [Enum.KeyCode.Minus] = "-",
-        [Enum.KeyCode.Equals] = "=",
-        [Enum.KeyCode.Tilde] = "~",
-        [Enum.KeyCode.LeftBracket] = "[",
-        [Enum.KeyCode.RightBracket] = "]",
-        [Enum.KeyCode.RightParenthesis] = ")",
-        [Enum.KeyCode.LeftParenthesis] = "(",
-        [Enum.KeyCode.Semicolon] = ",",
-        [Enum.KeyCode.Quote] = "'",
-        [Enum.KeyCode.BackSlash] = "\\",
-        [Enum.KeyCode.Comma] = ",",
-        [Enum.KeyCode.Period] = ".",
-        [Enum.KeyCode.Slash] = "/",
-        [Enum.KeyCode.Asterisk] = "*",
-        [Enum.KeyCode.Plus] = "+",
-        [Enum.KeyCode.Period] = ".",
-        [Enum.KeyCode.Backquote] = "`",
-        [Enum.UserInputType.MouseButton1] = "MB1",
-        [Enum.UserInputType.MouseButton2] = "MB2",
-        [Enum.UserInputType.MouseButton3] = "MB3",
-        [Enum.KeyCode.Escape] = "ESC",
-        [Enum.KeyCode.Space] = "SPC",
-    }
-    
-    Library.__index = Library
+for _, path in Library.Folders do
+    makefolder(Library.Directory .. path)
+end
 
-    for _,path in Library.Folders do 
-        makefolder(Library.Directory .. path)
+local Flags = Library.Flags
+local ConfigFlags = Library.ConfigFlags
+local Notifications = Library.Notifications
+
+function Library:GetTransparency(obj)
+    if obj:IsA("Frame") then
+        return {"BackgroundTransparency"}
+    elseif obj:IsA("TextLabel") or obj:IsA("TextButton") then
+        return {"TextTransparency", "BackgroundTransparency"}
+    elseif obj:IsA("ImageLabel") or obj:IsA("ImageButton") then
+        return {"BackgroundTransparency", "ImageTransparency"}
+    elseif obj:IsA("ScrollingFrame") then
+        return {"BackgroundTransparency", "ScrollBarImageTransparency"}
+    elseif obj:IsA("TextBox") then
+        return {"TextTransparency", "BackgroundTransparency"}
+    elseif obj:IsA("UIStroke") then
+        return {"Transparency"}
     end
+    return nil
+end
 
-    local Flags = Library.Flags 
-    local ConfigFlags = Library.ConfigFlags
-    local Notifications = Library.Notifications 
---
+function Library:Tween(obj, props, info)
+    local tween = TweenService:Create(obj, info or TweenInfo.new(0.25, Enum.EasingStyle.Quint, Enum.EasingDirection.InOut), props)
+    tween:Play()
+    return tween
+end
 
--- Library functions 
-    -- Misc functions
-        function Library:GetTransparency(obj)
-            if obj:IsA("Frame") then
-                return {"BackgroundTransparency"}
-            elseif obj:IsA("TextLabel") or obj:IsA("TextButton") then
-                return { "TextTransparency", "BackgroundTransparency" }
-            elseif obj:IsA("ImageLabel") or obj:IsA("ImageButton") then
-                return { "BackgroundTransparency", "ImageTransparency" }
-            elseif obj:IsA("ScrollingFrame") then
-                return { "BackgroundTransparency", "ScrollBarImageTransparency" }
-            elseif obj:IsA("TextBox") then
-                return { "TextTransparency", "BackgroundTransparency" }
-            elseif obj:IsA("UIStroke") then 
-                return { "Transparency" }
-            end
-        
-            return nil
+function Library:Fade(obj, prop, visible, speed)
+    if not (obj and prop) then return end
+    local original = obj[prop]
+    obj[prop] = visible and 1 or original
+    local tween = Library:Tween(obj, {[prop] = visible and original or 1}, TweenInfo.new(speed or 0.25, Enum.EasingStyle.Quint, Enum.EasingDirection.InOut))
+    Library:Connection(tween.Completed, function()
+        if not visible then
+            task.wait()
+            obj[prop] = original
         end
+    end)
+    return tween
+end
 
-        function Library:Tween(Object, Properties, Info)
-            local tween = TweenService:Create(Object, Info or TweenInfo.new(0.25, Enum.EasingStyle.Quint, Enum.EasingDirection.InOut, 0, false, 0), Properties)
-            tween:Play()
-            
-            return tween
+function Library:Hovering(target)
+    if type(target) == "table" then
+        for _, obj in target do
+            if Library:Hovering(obj) then return true end
         end
+        return false
+    end
+    local y_cond = target.AbsolutePosition.Y <= Mouse.Y and Mouse.Y <= target.AbsolutePosition.Y + target.AbsoluteSize.Y
+    local x_cond = target.AbsolutePosition.X <= Mouse.X and Mouse.X <= target.AbsolutePosition.X + target.AbsoluteSize.X
+    return y_cond and x_cond
+end
 
-        function Library:Fade(obj, prop, vis, speed)
-            if not (obj and prop) then
-                return
-            end
-
-            local OldTransparency = obj[prop]
-            obj[prop] = vis and 1 or OldTransparency
-
-            local Tween = Library:Tween(obj, { [prop] = vis and OldTransparency or 1 }, TweenInfo.new(speed or 0.25, Enum.EasingStyle.Quint, Enum.EasingDirection.InOut, 0, false, 0))
-
-            Library:Connection(Tween.Completed, function()
-                if not vis then
-                    task.wait()
-                    obj[prop] = OldTransparency
-                end
-            end)
-
-            return Tween
-        end
-
-        function Library:Resizify(Parent)
-            local Resizing = Library:Create("TextButton", {
-                Position = dim2(1, -10, 1, -10);
-                BorderColor3 = rgb(0, 0, 0);
-                Size = dim2(0, 10, 0, 10);
-                BorderSizePixel = 0;
-                BackgroundColor3 = rgb(255, 255, 255);
-                Parent = Parent;
-                BackgroundTransparency = 1; 
-                Text = ""
-            })
-        
-            local IsResizing = false 
-            local Size 
-            local InputLost 
-            local ParentSize = Parent.Size  
-            
-            Resizing.InputBegan:Connect(function(input)
-                if input.UserInputType == Enum.UserInputType.MouseButton1 then
-                    IsResizing = true
-                    InputLost = input.Position
-                    Size = Parent.Size
-                end
-            end)
-        
-            Resizing.InputEnded:Connect(function(input)
-                if input.UserInputType == Enum.UserInputType.MouseButton1 then
-                    IsResizing = false
-                end
-            end)
-        
-            Library:Connection(InputService.InputChanged, function(input, game_event) 
-                if IsResizing and input.UserInputType == Enum.UserInputType.MouseMovement then            
-                    Parent.Size = dim2(
-                        Size.X.Scale,
-                        math.clamp(Size.X.Offset + (input.Position.X - InputLost.X), ParentSize.X.Offset, Camera.ViewportSize.X), 
-                        Size.Y.Scale, 
-                        math.clamp(Size.Y.Offset + (input.Position.Y - InputLost.Y), ParentSize.Y.Offset, Camera.ViewportSize.Y)
-                    )
-                end
-            end)
-        end
-
-        function Library:MobileDrag(Parent)
-            if not IsMobile then return end
-            
-            local Dragging = false
-            local InitialPosition = nil
-            local StartPos = nil
-            local DragThreshold = 10
-            local HasMoved = false
-            
-            Parent.InputBegan:Connect(function(input)
-                if input.UserInputType == Enum.UserInputType.Touch then
-                    Dragging = true
-                    HasMoved = false
-                    InitialPosition = input.Position
-                    StartPos = Parent.Position
-                end
-            end)
-            
-            Parent.InputEnded:Connect(function(input)
-                if input.UserInputType == Enum.UserInputType.Touch then
-                    Dragging = false
-                end
-            end)
-            
-            Library:Connection(InputService.InputChanged, function(input)
-                if Dragging and input.UserInputType == Enum.UserInputType.Touch then
-                    local Delta = input.Position - InitialPosition
-                    
-                    if Delta.Magnitude > DragThreshold then
-                        HasMoved = true
-                    end
-                    
-                    if HasMoved and not Library.Locked then
-                        local NewPos = UDim2.new(
-                            0,
-                            math.clamp(StartPos.X.Offset + Delta.X, 0, Camera.ViewportSize.X - Parent.AbsoluteSize.X),
-                            0,
-                            math.clamp(StartPos.Y.Offset + Delta.Y, 0, Camera.ViewportSize.Y - Parent.AbsoluteSize.Y)
-                        )
-                        Parent.Position = NewPos
-                    end
-                end
-            end)
-        end
-        
-        function Library:Hovering(Object)
-            if type(Object) == "table" then 
-                local Pass = false;
-
-                for _,obj in Object do 
-                    if Library:Hovering(obj) then 
-                        Pass = true
-                        return Pass
-                    end 
-                end 
-            else 
-                local y_cond = Object.AbsolutePosition.Y <= mouse.Y and mouse.Y <= Object.AbsolutePosition.Y + Object.AbsoluteSize.Y
-                local x_cond = Object.AbsolutePosition.X <= mouse.X and mouse.X <= Object.AbsolutePosition.X + Object.AbsoluteSize.X
+function Library:Draggify(target)
+    local dragging = false
+    local startInput = nil
+    local startPos = nil
     
-                return (y_cond and x_cond)
-            end 
-        end  
+    target.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 then
+            if Library.Locked then return end
+            dragging = true
+            startInput = input.Position
+            startPos = target.Position
+        end
+    end)
+    
+    target.InputEnded:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 then
+            dragging = false
+        end
+    end)
+    
+    Library:Connection(InputService.InputChanged, function(input)
+        if dragging and input.UserInputType == Enum.UserInputType.MouseMovement and not Library.Locked then
+            local delta = input.Position - startInput
+            target.Position = dim2(0, math.clamp(startPos.X.Offset + delta.X, 0, Camera.ViewportSize.X - target.AbsoluteSize.X), 0, math.clamp(startPos.Y.Offset + delta.Y, 0, Camera.ViewportSize.Y - target.AbsoluteSize.Y))
+        end
+    end)
+end
 
-        function Library:Draggify(Parent)
-            local Dragging = false 
-            local IntialSize = Parent.Position
-            local InitialPosition 
-
-            Parent.InputBegan:Connect(function(Input)
-                if Input.UserInputType == Enum.UserInputType.MouseButton1 then
-                    if Library.Locked then return end
-                    Dragging = true
-                    InitialPosition = Input.Position
-                    InitialSize = Parent.Position
-                end
-            end)
-
-            Parent.InputEnded:Connect(function(input)
-                if input.UserInputType == Enum.UserInputType.MouseButton1 then
-                    Dragging = false
-                end
-            end)
-
-            Library:Connection(InputService.InputChanged, function(Input, game_event) 
-                if Dragging and Input.UserInputType == Enum.UserInputType.MouseMovement and not Library.Locked then
-                    local Horizontal = Camera.ViewportSize.X
-                    local Vertical = Camera.ViewportSize.Y
-
-                    local NewPosition = dim2(
-                        0,
-                        math.clamp(
-                            InitialSize.X.Offset + (Input.Position.X - InitialPosition.X),
-                            0,
-                            Horizontal - Parent.Size.X.Offset
-                        ),
-                        0,
-                        math.clamp(
-                            InitialSize.Y.Offset + (Input.Position.Y - InitialPosition.Y),
-                            0,
-                            Vertical - Parent.Size.Y.Offset
-                        )
-                    )
-
-                    Parent.Position = NewPosition
-                end
-            end)
-        end 
-
-        function Library:Convert(str)
-            local Values = {}
-
-            for Value in string.gmatch(str, "[^,]+") do
-                table.insert(Values, tonumber(Value))
+function Library:MobileDrag(target)
+    if not IsMobile then return end
+    
+    local dragging = false
+    local startInput = nil
+    local startPos = nil
+    local hasMoved = false
+    local threshold = 10
+    
+    target.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.Touch then
+            dragging = true
+            hasMoved = false
+            startInput = input.Position
+            startPos = target.Position
+        end
+    end)
+    
+    target.InputEnded:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.Touch then
+            dragging = false
+        end
+    end)
+    
+    Library:Connection(InputService.InputChanged, function(input)
+        if dragging and input.UserInputType == Enum.UserInputType.Touch then
+            local delta = input.Position - startInput
+            if delta.Magnitude > threshold then hasMoved = true end
+            if hasMoved and not Library.Locked then
+                target.Position = dim2(0, math.clamp(startPos.X.Offset + delta.X, 0, Camera.ViewportSize.X - target.AbsoluteSize.X), 0, math.clamp(startPos.Y.Offset + delta.Y, 0, Camera.ViewportSize.Y - target.AbsoluteSize.Y))
             end
+        end
+    end)
+end
 
-            if #Values == 4 then              
-                return unpack(Values)
+function Library:Convert(str)
+    local values = {}
+    for value in string.gmatch(str, "[^,]+") do
+        table.insert(values, tonumber(value))
+    end
+    if #values == 4 then return unpack(values) end
+end
+
+function Library:Lerp(a, b, t)
+    return a + (b - a) * (t or 1/8)
+end
+
+function Library:ConvertEnum(enum)
+    local parts = {}
+    for part in string.gmatch(enum, "[%w_]+") do
+        table.insert(parts, part)
+    end
+    local result = Enum
+    for i = 2, #parts do
+        result = result[parts[i]]
+    end
+    return result
+end
+
+function Library:ConvertHex(color, alpha)
+    local r = math.floor(color.R * 255)
+    local g = math.floor(color.G * 255)
+    local b = math.floor(color.B * 255)
+    local a = alpha and math.floor(alpha * 255) or 255
+    return string.format("#%02X%02X%02X%02X", r, g, b, a)
+end
+
+function Library:ConvertFromHex(str)
+    str = str:gsub("#", "")
+    local r = tonumber(str:sub(1, 2), 16) / 255
+    local g = tonumber(str:sub(3, 4), 16) / 255
+    local b = tonumber(str:sub(5, 6), 16) / 255
+    local a = tonumber(str:sub(7, 8), 16) and tonumber(str:sub(7, 8), 16) / 255 or 1
+    return Color3.new(r, g, b), a
+end
+
+local ConfigHolder
+
+function Library:UpdateConfigList()
+    if not ConfigHolder then return end
+    local list = {}
+    for _, file in listfiles(Library.Directory .. "/configs") do
+        local name = file:gsub(Library.Directory .. "/configs\\", ""):gsub(".cfg", ""):gsub(Library.Directory .. "\\configs\\", "")
+        list[#list + 1] = name
+    end
+    ConfigHolder.RefreshOptions(list)
+end
+
+function Library:Keypicker(properties)
+    local cfg = {
+        Name = properties.Name or "Color",
+        Flag = properties.Flag or properties.Name or "Colorpicker",
+        Callback = properties.Callback or function() end,
+        Color = properties.Color or color(1, 1, 1),
+        Alpha = properties.Alpha or properties.Transparency or 0,
+        Open = false,
+        Items = {},
+    }
+    
+    local draggingSat = false
+    local draggingHue = false
+    local draggingAlpha = false
+    local h, s, v = cfg.Color:ToHSV()
+    local a = cfg.Alpha
+    
+    Flags[cfg.Flag] = {Color = cfg.Color, Transparency = cfg.Alpha}
+    
+    local items = cfg.Items
+    
+    items.Button = Library:Create("TextButton", {
+        Active = false,
+        BorderColor3 = rgb(0, 0, 0),
+        Text = "",
+        AutoButtonColor = false,
+        Name = "\0",
+        LayoutOrder = -1,
+        Parent = self.Items.Components,
+        Size = dim2(0, 28, 0, 14),
+        Selectable = false,
+        BorderSizePixel = 0,
+        BackgroundColor3 = Theme.inline
+    })
+    
+    items.ButtonColor = Library:Create("Frame", {
+        Parent = items.Button,
+        Name = "\0",
+        Position = dim2(0, 1, 0, 1),
+        BorderColor3 = rgb(0, 0, 0),
+        Size = dim2(1, -2, 1, -2),
+        BorderSizePixel = 0,
+        BackgroundColor3 = Theme.accent
+    })
+    
+    Library:Create("UICorner", {Parent = items.ButtonColor, CornerRadius = dim(0, 4)})
+    Library:Create("UICorner", {Parent = items.Button, CornerRadius = dim(0, 4)})
+    
+    items.Window = Library:Create("TextButton", {
+        Parent = Library.Other,
+        Text = "",
+        AutoButtonColor = false,
+        Active = false,
+        Name = "\0",
+        Position = dim2(0, 100, 0, 10),
+        BorderColor3 = rgb(0, 0, 0),
+        Size = dim2(0, 230, 0, 200),
+        BorderSizePixel = 0,
+        BackgroundColor3 = Theme.inline
+    })
+    Library:Themify(items.Window, "inline", "BackgroundColor3")
+    
+    Library:Create("UICorner", {Parent = items.Window})
+    
+    items.Inline = Library:Create("Frame", {
+        Parent = items.Window,
+        Name = "\0",
+        Position = dim2(0, 1, 0, 1),
+        BorderColor3 = rgb(0, 0, 0),
+        Size = dim2(1, -2, 1, -2),
+        BorderSizePixel = 0,
+        BackgroundColor3 = Theme.visible_backgrounds
+    })
+    Library:Themify(items.Inline, "visible_backgrounds", "BackgroundColor3")
+    
+    Library:Create("UICorner", {Parent = items.Inline})
+    
+    items.Pallete = Library:Create("Frame", {
+        Parent = items.Inline,
+        Name = "\0",
+        BackgroundTransparency = 1,
+        Position = dim2(0, 1, 0, 2),
+        BorderColor3 = rgb(0, 0, 0),
+        Size = dim2(1, -4, 1, -3),
+        BorderSizePixel = 0,
+        BackgroundColor3 = Theme.inline
+    })
+    
+    items.SatVal = Library:Create("Frame", {
+        Name = "\0",
+        Parent = items.Pallete,
+        BorderColor3 = rgb(0, 0, 0),
+        Size = dim2(1, -38, 1, -43),
+        BorderSizePixel = 0,
+        BackgroundColor3 = rgb(0, 0, 0)
+    })
+    
+    items.SatValInner = Library:Create("Frame", {
+        Parent = items.SatVal,
+        Name = "\0",
+        Position = dim2(0, 1, 0, 1),
+        BorderColor3 = rgb(0, 0, 0),
+        Size = dim2(1, -2, 1, -2),
+        BorderSizePixel = 0,
+        BackgroundColor3 = Theme.inline
+    })
+    
+    items.SatValColor = Library:Create("Frame", {
+        Parent = items.SatValInner,
+        Name = "\0",
+        Position = dim2(0, 1, 0, 1),
+        BorderColor3 = rgb(0, 0, 0),
+        Size = dim2(1, -2, 1, -2),
+        BorderSizePixel = 0,
+        BackgroundColor3 = Theme.accent
+    })
+    
+    items.SatValBtn = Library:Create("TextButton", {
+        Name = "\0",
+        Text = "",
+        AutoButtonColor = false,
+        Parent = items.SatValColor,
+        BorderColor3 = rgb(0, 0, 0),
+        Size = dim2(1, 0, 1, 0),
+        BorderSizePixel = 0,
+        BackgroundColor3 = rgb(255, 255, 255)
+    })
+    
+    Library:Create("UIGradient", {
+        Parent = items.SatValBtn,
+        Transparency = numseq(numkey(0, 0), numkey(1, 1))
+    })
+    
+    items.SatValWhite = Library:Create("Frame", {
+        Parent = items.SatValColor,
+        Name = "\0",
+        Size = dim2(1, 0, 1, 0),
+        BorderColor3 = rgb(0, 0, 0),
+        ZIndex = 2,
+        BorderSizePixel = 0,
+        BackgroundColor3 = rgb(255, 255, 255)
+    })
+    
+    Library:Create("UIGradient", {
+        Rotation = 270,
+        Transparency = numseq(numkey(0, 0), numkey(1, 1)),
+        Parent = items.SatValWhite,
+        Color = rgbseq(rgbkey(0, rgb(0, 0, 0)), rgbkey(1, rgb(0, 0, 0)))
+    })
+    
+    items.SatValPicker = Library:Create("Frame", {
+        Name = "\0",
+        Parent = items.SatValColor,
+        BorderColor3 = rgb(0, 0, 0),
+        Size = dim2(0, 4, 0, 4),
+        BorderSizePixel = 0,
+        BackgroundColor3 = rgb(0, 0, 0)
+    })
+    
+    items.SatValPickerInner = Library:Create("Frame", {
+        Parent = items.SatValPicker,
+        Name = "\0",
+        Position = dim2(0, 1, 0, 1),
+        BorderColor3 = rgb(0, 0, 0),
+        Size = dim2(1, -2, 1, -2),
+        BorderSizePixel = 0,
+        BackgroundColor3 = rgb(255, 255, 255)
+    })
+    
+    items.HueBar = Library:Create("TextButton", {
+        Active = false,
+        BorderColor3 = rgb(0, 0, 0),
+        Text = "",
+        AutoButtonColor = false,
+        AnchorPoint = vec2(1, 1),
+        Parent = items.Pallete,
+        Name = "\0",
+        Position = dim2(1, -18, 1, 0),
+        Size = dim2(0, 16, 1, 0),
+        Selectable = false,
+        BorderSizePixel = 0,
+        BackgroundColor3 = rgb(0, 0, 0)
+    })
+    
+    items.HueBarInner = Library:Create("Frame", {
+        Parent = items.HueBar,
+        Name = "\0",
+        Position = dim2(0, 1, 0, 1),
+        BorderColor3 = rgb(0, 0, 0),
+        Size = dim2(1, -2, 1, -2),
+        BorderSizePixel = 0,
+        BackgroundColor3 = Theme.inline
+    })
+    
+    items.HueGradient = Library:Create("Frame", {
+        Parent = items.HueBarInner,
+        Name = "\0",
+        Position = dim2(0, 1, 0, 1),
+        BorderColor3 = rgb(0, 0, 0),
+        Size = dim2(1, -2, 1, -2),
+        BorderSizePixel = 0,
+        BackgroundColor3 = rgb(255, 255, 255)
+    })
+    
+    Library:Create("UIGradient", {
+        Rotation = 90,
+        Parent = items.HueGradient,
+        Color = rgbseq(rgbkey(0, rgb(255, 0, 0)), rgbkey(0.17, rgb(255, 255, 0)), rgbkey(0.33, rgb(0, 255, 0)), rgbkey(0.5, rgb(0, 255, 255)), rgbkey(0.67, rgb(0, 0, 255)), rgbkey(0.83, rgb(255, 0, 255)), rgbkey(1, rgb(255, 0, 0)))
+    })
+    
+    items.HuePicker = Library:Create("Frame", {
+        Parent = items.HueGradient,
+        Name = "\0",
+        BorderMode = Enum.BorderMode.Inset,
+        BorderColor3 = rgb(0, 0, 0),
+        Size = dim2(1, 2, 0, 4),
+        Position = dim2(0, -1, 0, -1),
+        BackgroundColor3 = rgb(255, 255, 255)
+    })
+    
+    items.AlphaBar = Library:Create("TextButton", {
+        Active = false,
+        BorderColor3 = rgb(0, 0, 0),
+        Text = "",
+        AutoButtonColor = false,
+        AnchorPoint = vec2(1, 1),
+        Parent = items.Pallete,
+        Name = "\0",
+        Position = dim2(1, 2, 1, 0),
+        Size = dim2(0, 16, 1, 0),
+        Selectable = false,
+        BorderSizePixel = 0,
+        BackgroundColor3 = rgb(0, 0, 0)
+    })
+    
+    items.AlphaBarInner = Library:Create("Frame", {
+        Parent = items.AlphaBar,
+        Name = "\0",
+        Position = dim2(0, 1, 0, 1),
+        BorderColor3 = rgb(0, 0, 0),
+        Size = dim2(1, -2, 1, -2),
+        BorderSizePixel = 0,
+        BackgroundColor3 = Theme.inline
+    })
+    
+    items.AlphaGradient = Library:Create("Frame", {
+        Parent = items.AlphaBarInner,
+        Name = "\0",
+        Position = dim2(0, 1, 0, 1),
+        BorderColor3 = rgb(0, 0, 0),
+        Size = dim2(1, -2, 1, -2),
+        BorderSizePixel = 0,
+        BackgroundColor3 = rgb(255, 255, 255)
+    })
+    
+    Library:Create("UIGradient", {
+        Rotation = 90,
+        Parent = items.AlphaGradient,
+        Color = rgbseq(rgbkey(0, rgb(255, 255, 255)), rgbkey(1, rgb(9, 9, 9)))
+    })
+    
+    items.AlphaPicker = Library:Create("Frame", {
+        Parent = items.AlphaGradient,
+        Name = "\0",
+        BorderMode = Enum.BorderMode.Inset,
+        BorderColor3 = rgb(0, 0, 0),
+        Size = dim2(1, 2, 0, 4),
+        Position = dim2(0, -1, 0, -1),
+        BackgroundColor3 = rgb(255, 255, 255)
+    })
+    
+    items.HexInput = Library:Create("Frame", {
+        AnchorPoint = vec2(0, 1),
+        Parent = items.Pallete,
+        Name = "\0",
+        Position = dim2(0, 1, 1, 0),
+        BorderColor3 = rgb(0, 0, 0),
+        Size = dim2(1, -39, 0, 18),
+        BorderSizePixel = 0,
+        BackgroundColor3 = rgb(0, 0, 0)
+    })
+    
+    items.HexInputInner = Library:Create("Frame", {
+        Parent = items.HexInput,
+        Name = "\0",
+        Position = dim2(0, 1, 0, 1),
+        BorderColor3 = rgb(0, 0, 0),
+        Size = dim2(1, -2, 1, -2),
+        BorderSizePixel = 0,
+        BackgroundColor3 = Theme.inline
+    })
+    
+    items.HexBox = Library:Create("TextBox", {
+        FontFace = Font.new("rbxassetid://12187365364", Enum.FontWeight.SemiBold, Enum.FontStyle.Normal),
+        Parent = items.HexInputInner,
+        TextColor3 = Theme.text_color,
+        BorderColor3 = rgb(0, 0, 0),
+        Text = "255, 255, 255, 0.5",
+        Name = "\0",
+        Size = dim2(1, 0, 1, 0),
+        Selectable = false,
+        BorderSizePixel = 0,
+        BackgroundTransparency = 1,
+        TextXAlignment = Enum.TextXAlignment.Left,
+        Active = false,
+        AutomaticSize = Enum.AutomaticSize.XY,
+        TextSize = 14,
+        BackgroundColor3 = rgb(255, 255, 255)
+    })
+    
+    Library:Create("UIPadding", {
+        PaddingTop = dim(0, 2),
+        PaddingBottom = dim(0, 3),
+        Parent = items.Pallete,
+        PaddingRight = dim(0, 3),
+        PaddingLeft = dim(0, 2)
+    })
+    
+    function cfg:SetVisible(visible)
+        items.Window.Visible = visible
+        items.Window.Parent = visible and Library.Items or Library.Other
+        items.Window.Position = dim2(0, items.Button.AbsolutePosition.X + 2, 0, items.Button.AbsolutePosition.Y + 74)
+    end
+    
+    function cfg:Set(newColor, newAlpha)
+        if type(newColor) == "boolean" then return end
+        
+        if newColor then
+            h, s, v = newColor:ToHSV()
+        end
+        
+        if newAlpha then
+            a = newAlpha
+        end
+        
+        local currentColor = hsv(h, s, v)
+        
+        items.SatValPicker.Position = dim2(s, -2, 1 - v, -2)
+        items.AlphaPicker.Position = dim2(0, -1, a, -1)
+        items.HuePicker.Position = dim2(0, -1, h, -1)
+        
+        items.ButtonColor.BackgroundColor3 = currentColor
+        items.SatValColor.BackgroundColor3 = hsv(h, 1, 1)
+        
+        Flags[cfg.Flag] = {Color = currentColor, Transparency = a}
+        
+        items.HexBox.Text = string.format("%s, %s, %s, %s", Library:Round(currentColor.R * 255), Library:Round(currentColor.G * 255), Library:Round(currentColor.B * 255), Library:Round(1 - a, 0.01))
+        
+        cfg.Callback(currentColor, a)
+    end
+    
+    function cfg:UpdateFromInput(input)
+        if not IsMobile then
+            local mousePos = InputService:GetMouseLocation()
+            local offset = vec2(mousePos.X, mousePos.Y - GuiInset)
+            
+            if draggingSat then
+                s = math.clamp((offset - items.SatValBtn.AbsolutePosition).X / items.SatValBtn.AbsoluteSize.X, 0, 1)
+                v = 1 - math.clamp((offset - items.SatValBtn.AbsolutePosition).Y / items.SatValBtn.AbsoluteSize.Y, 0, 1)
+            elseif draggingHue then
+                h = math.clamp((offset - items.HueBar.AbsolutePosition).Y / items.HueBar.AbsoluteSize.Y, 0, 1)
+            elseif draggingAlpha then
+                a = math.clamp((offset - items.AlphaBar.AbsolutePosition).Y / items.AlphaBar.AbsoluteSize.Y, 0, 1)
+            end
+        else
+            local touchPos = input.Position
+            local offset = vec2(touchPos.X, touchPos.Y)
+            
+            if draggingSat then
+                s = math.clamp((offset - items.SatValBtn.AbsolutePosition).X / items.SatValBtn.AbsoluteSize.X, 0, 1)
+                v = 1 - math.clamp((offset - items.SatValBtn.AbsolutePosition).Y / items.SatValBtn.AbsoluteSize.Y, 0, 1)
+            elseif draggingHue then
+                h = math.clamp((offset - items.HueBar.AbsolutePosition).Y / items.HueBar.AbsoluteSize.Y, 0, 1)
+            elseif draggingAlpha then
+                a = math.clamp((offset - items.AlphaBar.AbsolutePosition).Y / items.AlphaBar.AbsoluteSize.Y, 0, 1)
+            end
+        end
+        
+        cfg:Set()
+    end
+    
+    items.Button.MouseButton1Click:Connect(function()
+        cfg.Open = not cfg.Open
+        cfg:SetVisible(cfg.Open)
+        Library.OpenElement = cfg
+    end)
+    
+    InputService.InputChanged:Connect(function(input)
+        if (draggingSat or draggingHue or draggingAlpha) and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+            cfg:UpdateFromInput(input)
+        end
+    end)
+    
+    Library:Connection(InputService.InputEnded, function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+            draggingSat = false
+            draggingHue = false
+            draggingAlpha = false
+        end
+    end)
+    
+    items.SatValBtn.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+            draggingSat = true
+        end
+    end)
+    
+    items.HueBar.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+            draggingHue = true
+        end
+    end)
+    
+    items.AlphaBar.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+            draggingAlpha = true
+        end
+    end)
+    
+    items.HexBox.FocusLost:Connect(function()
+        local r, g, b, newA = Library:Convert(items.HexBox.Text)
+        if r and g and b and newA then
+            cfg:Set(rgb(r, g, b), 1 - newA)
+        end
+    end)
+    
+    cfg:Set(cfg.Color, cfg.Alpha)
+    ConfigFlags[cfg.Flag] = cfg.Set
+    
+    return setmetatable(cfg, Library)
+end
+
+function Library:GetConfig()
+    local config = {}
+    for idx, value in Flags do
+        if type(value) == "table" and value.key then
+            config[idx] = {active = value.Active, mode = value.Mode, key = tostring(value.Key)}
+        elseif type(value) == "table" and value.Transparency and value.Color then
+            config[idx] = {Transparency = value.Transparency, Color = value.Color:ToHex()}
+        else
+            config[idx] = value
+        end
+    end
+    return HttpService:JSONEncode(config)
+end
+
+function Library:LoadConfig(json)
+    local config = HttpService:JSONDecode(json)
+    for idx, value in config do
+        if idx == "config_name_list" then continue end
+        local func = ConfigFlags[idx]
+        if func then
+            if type(value) == "table" and value.Transparency and value.Color then
+                func(hex(value.Color), value.Transparency)
+            elseif type(value) == "table" and value.Active then
+                func(value)
             else
-                return
+                func(value)
             end
         end
-        
-        function Library:Lerp(start, finish, t)
-            t = t or 1 / 8
+    end
+end
 
-            return start * (1 - t) + finish * t
-        end
+function Library:Round(num, float)
+    local mult = 1 / (float or 1)
+    return math.floor(num * mult + 0.5) / mult
+end
 
-        function Library:ConvertEnum(enum)
-            local EnumParts = {}
-            
-            for part in string.gmatch(enum, "[%w_]+") do
-                insert(EnumParts, part)
-            end
-        
-            local EnumTable = Enum
+function Library:Themify(instance, theme, property)
+    table.insert(ThemeObjects[theme][property], instance)
+end
 
-            for i = 2, #EnumParts do
-                local EnumItem = EnumTable[EnumParts[i]]
-        
-                EnumTable = EnumItem
-            end
-            
-            return EnumTable
-        end
-
-        function Library:ConvertHex(color, alpha)
-            local r = math.floor(color.R * 255)
-            local g = math.floor(color.G * 255)
-            local b = math.floor(color.B * 255)
-            local a = alpha and math.floor(alpha * 255) or 255
-            return string.format("#%02X%02X%02X%02X", r, g, b, a)
-        end
-
-        function Library:ConvertFromHex(color)
-            color = color:gsub("#", "")
-            local r = tonumber(color:sub(1, 2), 16) / 255
-            local g = tonumber(color:sub(3, 4), 16) / 255
-            local b = tonumber(color:sub(5, 6), 16) / 255
-            local a = tonumber(color:sub(7, 8), 16) and tonumber(color:sub(7, 8), 16) / 255 or 1
-            return Color3.new(r, g, b), a
-        end
-
-        local ConfigHolder;
-        function Library:UpdateConfigList() 
-            if not ConfigHolder then 
-                print("no exist :(")
-                return 
-            end
-            
-            local List = {}
-            
-            for _,file in listfiles(Library.Directory .. "/configs") do
-                local Name = file:gsub(Library.Directory .. "/configs\\", ""):gsub(".cfg", ""):gsub(Library.Directory .. "\\configs\\", "")
-                List[#List + 1] = Name
-            end
-
-            ConfigHolder.RefreshOptions(List)
-        end
-
-        function Library:Keypicker(properties) 
-            local Cfg = {
-                Name = properties.Name or "Color", 
-                Flag = properties.Flag or properties.Name or "Colorpicker",
-                Callback = properties.Callback or function() end,
-                Color = properties.Color or color(1, 1, 1),
-                Alpha = properties.Alpha or properties.Transparency or 0,
-                Open = false, 
-                Items = {};
-            }
-
-            local DraggingSat = false 
-            local DraggingHue = false 
-            local DraggingAlpha = false 
-
-            local h, s, v = Cfg.Color:ToHSV() 
-            local a = Cfg.Alpha 
-
-            Flags[Cfg.Flag] = {Color = Cfg.Color, Transparency = Cfg.Alpha}
-
-            local Items = Cfg.Items; do 
-                Items.Button = Library:Create( "TextButton" , {
-                    Active = false;
-                    BorderColor3 = rgb(0, 0, 0);
-                    Text = "";
-                    AutoButtonColor = false;
-                    Name = "\0";
-                    LayoutOrder = -1;
-                    Parent = self.Items.Components;
-                    Size = dim2(0, 28, 0, 14);
-                    Selectable = false;
-                    BorderSizePixel = 0;
-                    BackgroundColor3 = rgb(45, 45, 45)
-                });
-                
-                Items.ButtonColor = Library:Create( "Frame" , {
-                    Parent = Items.Button;
-                    Name = "\0";
-                    Position = dim2(0, 1, 0, 1);
-                    BorderColor3 = rgb(0, 0, 0);
-                    Size = dim2(1, -2, 1, -2);
-                    BorderSizePixel = 0;
-                    BackgroundColor3 = rgb(147, 51, 234)
-                });
-                
-                Library:Create( "UICorner" , {
-                    Parent = Items.ButtonColor;
-                    CornerRadius = dim(0, 4)
-                });
-                
-                Library:Create( "UICorner" , {
-                    Parent = Items.Button;
-                    CornerRadius = dim(0, 4)
-                });
-                
-                Items.Window = Library:Create( "TextButton" , {
-                    Parent = Library.Other;
-                    Text = "";
-                    AutoButtonColor = false;
-                    Active = false;
-                    Name = "\0";
-                    Position = dim2(0, 100, 0, 10);
-                    BorderColor3 = rgb(0, 0, 0);
-                    Size = dim2(0, 230, 0, 200);
-                    BorderSizePixel = 0;
-                    BackgroundColor3 = themes.preset.inline
-                });	Library:Themify(Items.Window, "inline", "BackgroundColor3")
-
-                Items.Fade = Library:Create( "Frame" , {
-                    Parent = Items.Window;
-                    BackgroundTransparency = 1;
-                    ZIndex = 500;
-                    Name = "\0";
-                    Position = dim2(0, 0, 0, 0);
-                    BorderColor3 = rgb(0, 0, 0);
-                    Size = dim2(1, 0, 1, 0);
-                    BorderSizePixel = 0;
-                    BackgroundColor3 = themes.preset.inline
-                });	Library:Themify(Items.Window, "inline", "BackgroundColor3")
-
-                Library:Create( "UICorner" , {
-                    Parent = Items.Window
-                });                    
-
-                Items.Inline = Library:Create( "Frame" , {
-                    Parent = Items.Window;
-                    Name = "\0";
-                    Position = dim2(0, 1, 0, 1);
-                    BorderColor3 = rgb(0, 0, 0);
-                    Size = dim2(1, -2, 1, -2);
-                    BorderSizePixel = 0;
-                    BackgroundColor3 = themes.preset.visible_backgrounds
-                });	Library:Themify(Items.Inline, "visible_backgrounds", "BackgroundColor3")
-                
-                Library:Create( "UICorner" , {
-                    Parent = Items.Inline
-                });                    
-
-                Items.Fill = Library:Create( "Frame" , {
-                    Parent = Items.Inline;
-                    Name = "\0";
-                    Position = dim2(0, 1, 0, 26);
-                    BorderColor3 = rgb(0, 0, 0);
-                    Size = dim2(1, -2, 0, 1);
-                    BorderSizePixel = 0;
-                    BackgroundColor3 = themes.preset.inline
-                });	Library:Themify(Items.Fill, "inline", "BackgroundColor3")
-                
-                Items.Pallete = Library:Create( "Frame" , {
-                    Parent = Items.Inline;
-                    Name = "\0";
-                    BackgroundTransparency = 1;
-                    Position = dim2(0, 1, 0, 2);
-                    BorderColor3 = rgb(0, 0, 0);
-                    Size = dim2(1, -4, 1, -3);
-                    BorderSizePixel = 0;
-                    BackgroundColor3 = rgb(45, 45, 45)
-                });
-                
-                Items.Outline = Library:Create( "Frame" , {
-                    Name = "\0";
-                    Parent = Items.Pallete;
-                    BorderColor3 = rgb(0, 0, 0);
-                    Size = dim2(1, -38, 1, -43);
-                    BorderSizePixel = 0;
-                    BackgroundColor3 = rgb(0, 0, 0)
-                });
-                
-                Items.Inline = Library:Create( "Frame" , {
-                    Parent = Items.Outline;
-                    Name = "\0";
-                    Position = dim2(0, 1, 0, 1);
-                    BorderColor3 = rgb(0, 0, 0);
-                    Size = dim2(1, -2, 1, -2);
-                    BorderSizePixel = 0;
-                    BackgroundColor3 = themes.preset.inline
-                });	Library:Themify(Items.Inline, "inline", "BackgroundColor3")
-                
-                Items.Inner = Library:Create( "Frame" , {
-                    Parent = Items.Inline;
-                    Name = "\0";
-                    Position = dim2(0, 1, 0, 1);
-                    BorderColor3 = rgb(0, 0, 0);
-                    Size = dim2(1, -2, 1, -2);
-                    BorderSizePixel = 0;
-                    BackgroundColor3 = rgb(147, 51, 234)
-                });
-                
-                Items.Val = Library:Create( "TextButton" , {
-                    Name = "\0";
-                    Text = "";
-                    AutoButtonColor = false;
-                    Parent = Items.Inner;
-                    BorderColor3 = rgb(0, 0, 0);
-                    Size = dim2(1, 0, 1, 0);
-                    BorderSizePixel = 0;
-                    BackgroundColor3 = rgb(255, 255, 255)
-                });
-                
-                Library:Create( "UIGradient" , {
-                    Parent = Items.Val;
-                    Transparency = numseq{numkey(0, 0), numkey(1, 1)}
-                });
-                
-                Items.SatValPicker = Library:Create( "Frame" , {
-                    Name = "\0";
-                    Parent = Items.Inner;
-                    BorderColor3 = rgb(0, 0, 0);
-                    Size = dim2(0, 3, 0, 3);
-                    BorderSizePixel = 0;
-                    BackgroundColor3 = rgb(0, 0, 0)
-                });
-                
-                Items.inline = Library:Create( "Frame" , {
-                    Parent = Items.SatValPicker;
-                    Name = "\0";
-                    Position = dim2(0, 1, 0, 1);
-                    BorderColor3 = rgb(0, 0, 0);
-                    Size = dim2(1, -2, 1, -2);
-                    BorderSizePixel = 0;
-                    BackgroundColor3 = rgb(255, 255, 255)
-                });
-                
-                Items.Saturation = Library:Create( "Frame" , {
-                    Parent = Items.Inner;
-                    Name = "\0";
-                    Size = dim2(1, 0, 1, 0);
-                    BorderColor3 = rgb(0, 0, 0);
-                    ZIndex = 2;
-                    BorderSizePixel = 0;
-                    BackgroundColor3 = rgb(255, 255, 255)
-                });
-                
-                Library:Create( "UIGradient" , {
-                    Rotation = 270;
-                    Transparency = numseq{numkey(0, 0), numkey(1, 1)};
-                    Parent = Items.Saturation;
-                    Color = rgbseq{rgbkey(0, rgb(0, 0, 0)), rgbkey(1, rgb(0, 0, 0))}
-                });
-                
-                Items.HexTextbox = Library:Create( "Frame" , {
-                    AnchorPoint = vec2(0, 1);
-                    Parent = Items.Pallete;
-                    Name = "\0";
-                    Position = dim2(0, 1, 1, 0);
-                    BorderColor3 = rgb(0, 0, 0);
-                    Size = dim2(1, -39, 0, 18);
-                    BorderSizePixel = 0;
-                    BackgroundColor3 = rgb(0, 0, 0)
-                });
-                
-                Items.Inline = Library:Create( "Frame" , {
-                    Parent = Items.HexTextbox;
-                    Name = "\0";
-                    Position = dim2(0, 1, 0, 1);
-                    BorderColor3 = rgb(0, 0, 0);
-                    Size = dim2(1, -2, 1, -2);
-                    BorderSizePixel = 0;
-                    BackgroundColor3 = themes.preset.inline
-                });	Library:Themify(Items.Inline, "inline", "BackgroundColor3")
-                
-                Items.Background = Library:Create( "Frame" , {
-                    Parent = Items.Inline;
-                    Name = "\0";
-                    Position = dim2(0, 1, 0, 1);
-                    BorderColor3 = rgb(0, 0, 0);
-                    Size = dim2(1, -2, 1, -2);
-                    BorderSizePixel = 0;
-                    BackgroundColor3 = themes.preset.background
-                });	Library:Themify(Items.Background, "background", "BackgroundColor3")
-                
-                Items.AlphaInput = Library:Create( "TextBox" , {
-                    FontFace = Font.new("rbxassetid://12187365364", Enum.FontWeight.SemiBold, Enum.FontStyle.Normal);
-                    Parent = Items.Background;
-                    TextColor3 = rgb(220, 220, 220);
-                    BorderColor3 = rgb(0, 0, 0);
-                    Text = "255, 255, 255, 0.5";
-                    Name = "\0";
-                    Size = dim2(1, 0, 1, 0);
-                    Selectable = false;
-                    BorderSizePixel = 0;
-                    BackgroundTransparency = 1;
-                    TextXAlignment = Enum.TextXAlignment.Left;
-                    Active = false;
-                    AutomaticSize = Enum.AutomaticSize.XY;
-                    TextSize = 14;
-                    BackgroundColor3 = rgb(255, 255, 255)
-                });
-                
-                Items.HueTextbox = Library:Create( "Frame" , {
-                    AnchorPoint = vec2(0, 1);
-                    Parent = Items.Pallete;
-                    Name = "\0";
-                    Position = dim2(0, 1, 1, -22);
-                    BorderColor3 = rgb(0, 0, 0);
-                    Size = dim2(1, -39, 0, 18);
-                    BorderSizePixel = 0;
-                    BackgroundColor3 = rgb(0, 0, 0)
-                });
-                
-                Items.Inline = Library:Create( "Frame" , {
-                    Parent = Items.HueTextbox;
-                    Name = "\0";
-                    Position = dim2(0, 1, 0, 1);
-                    BorderColor3 = rgb(0, 0, 0);
-                    Size = dim2(1, -2, 1, -2);
-                    BorderSizePixel = 0;
-                    BackgroundColor3 = themes.preset.inline
-                });	Library:Themify(Items.Inline, "inline", "BackgroundColor3")
-                
-                Items.Background = Library:Create( "Frame" , {
-                    Parent = Items.Inline;
-                    Name = "\0";
-                    Position = dim2(0, 1, 0, 1);
-                    BorderColor3 = rgb(0, 0, 0);
-                    Size = dim2(1, -2, 1, -2);
-                    BorderSizePixel = 0;
-                    BackgroundColor3 = themes.preset.background
-                });	Library:Themify(Items.Background, "background", "BackgroundColor3")
-                
-                Items.RGBInput = Library:Create( "TextBox" , {
-                    FontFace = Font.new("rbxassetid://12187365364", Enum.FontWeight.SemiBold, Enum.FontStyle.Normal);
-                    Parent = Items.Background;
-                    TextColor3 = rgb(220, 220, 220);
-                    BorderColor3 = rgb(0, 0, 0);
-                    Text = "255, 255, 255, 0.5";
-                    Name = "\0";
-                    Size = dim2(1, 0, 1, 0);
-                    Selectable = false;
-                    BorderSizePixel = 0;
-                    BackgroundTransparency = 1;
-                    Active = false;
-                    TextXAlignment = Enum.TextXAlignment.Left;
-                    AutomaticSize = Enum.AutomaticSize.XY;
-                    TextSize = 14;
-                    BackgroundColor3 = rgb(255, 255, 255)
-                });
-                
-                Items.Alpha = Library:Create( "TextButton" , {
-                    Active = false;
-                    BorderColor3 = rgb(0, 0, 0);
-                    Text = "";
-                    AutoButtonColor = false;
-                    AnchorPoint = vec2(1, 1);
-                    Parent = Items.Pallete;
-                    Name = "\0";
-                    Position = dim2(1, 2, 1, 0);
-                    Size = dim2(0, 16, 1, 0);
-                    Selectable = false;
-                    BorderSizePixel = 0;
-                    BackgroundColor3 = rgb(0, 0, 0)
-                });
-                
-                Items.Inline = Library:Create( "Frame" , {
-                    Parent = Items.Alpha;
-                    Name = "\0";
-                    Position = dim2(0, 1, 0, 1);
-                    BorderColor3 = rgb(0, 0, 0);
-                    Size = dim2(1, -2, 1, -2);
-                    BorderSizePixel = 0;
-                    BackgroundColor3 = themes.preset.inline
-                });	Library:Themify(Items.Inline, "inline", "BackgroundColor3")
-                
-                Items.Background = Library:Create( "Frame" , {
-                    Parent = Items.Inline;
-                    Name = "\0";
-                    Position = dim2(0, 1, 0, 1);
-                    BorderColor3 = rgb(0, 0, 0);
-                    Size = dim2(1, -2, 1, -2);
-                    BorderSizePixel = 0;
-                    BackgroundColor3 = rgb(255, 255, 255)
-                });
-                
-                Library:Create( "UIGradient" , {
-                    Rotation = 90;
-                    Parent = Items.Background;
-                    Color = rgbseq{rgbkey(0, rgb(255, 255, 255)), rgbkey(1, rgb(9, 9, 9))}
-                });
-                
-                Items.AlphaPicker = Library:Create( "Frame" , {
-                    Parent = Items.Background;
-                    Name = "\0";
-                    BorderMode = Enum.BorderMode.Inset;
-                    BorderColor3 = rgb(0, 0, 0);
-                    Size = dim2(1, 2, 0, 3);
-                    Position = dim2(0, -1, 0, -1);
-                    BackgroundColor3 = rgb(255, 255, 255)
-                });
-                
-                Items.RGB = Library:Create( "TextButton" , {
-                    Active = false;
-                    BorderColor3 = rgb(0, 0, 0);
-                    Text = "";
-                    AutoButtonColor = false;
-                    AnchorPoint = vec2(1, 1);
-                    Parent = Items.Pallete;
-                    Name = "\0";
-                    Position = dim2(1, -18, 1, 0);
-                    Size = dim2(0, 16, 1, 0);
-                    Selectable = false;
-                    BorderSizePixel = 0;
-                    BackgroundColor3 = rgb(0, 0, 0)
-                });
-                
-                Items.Inline = Library:Create( "Frame" , {
-                    Parent = Items.RGB;
-                    Name = "\0";
-                    Position = dim2(0, 1, 0, 1);
-                    BorderColor3 = rgb(0, 0, 0);
-                    Size = dim2(1, -2, 1, -2);
-                    BorderSizePixel = 0;
-                    BackgroundColor3 = themes.preset.inline
-                });	Library:Themify(Items.Inline, "inline", "BackgroundColor3")
-                
-                Items.hue_drag = Library:Create( "Frame" , {
-                    Parent = Items.Inline;
-                    Name = "\0";
-                    Position = dim2(0, 1, 0, 1);
-                    BorderColor3 = rgb(0, 0, 0);
-                    Size = dim2(1, -2, 1, -2);
-                    BorderSizePixel = 0;
-                    BackgroundColor3 = rgb(255, 255, 255)
-                });
-                
-                Library:Create( "UIGradient" , {
-                    Rotation = 90;
-                    Parent = Items.hue_drag;
-                    Color = rgbseq{rgbkey(0, rgb(255, 0, 0)), rgbkey(0.17, rgb(255, 255, 0)), rgbkey(0.33, rgb(0, 255, 0)), rgbkey(0.5, rgb(0, 255, 255)), rgbkey(0.67, rgb(0, 0, 255)), rgbkey(0.83, rgb(255, 0, 255)), rgbkey(1, rgb(255, 0, 0))}
-                });
-                
-                Items.HuePicker = Library:Create( "Frame" , {
-                    Parent = Items.hue_drag;
-                    Name = "\0";
-                    BorderMode = Enum.BorderMode.Inset;
-                    BorderColor3 = rgb(0, 0, 0);
-                    Size = dim2(1, 2, 0, 3);
-                    Position = dim2(0, -1, 0, -1);
-                    BackgroundColor3 = rgb(255, 255, 255)
-                });
-                
-                Library:Create( "UIPadding" , {
-                    PaddingTop = dim(0, 2);
-                    PaddingBottom = dim(0, 3);
-                    Parent = Items.Pallete;
-                    PaddingRight = dim(0, 3);
-                    PaddingLeft = dim(0, 2)
-                });
-            end;
-            
-            function Cfg.SetVisible(bool)
-                Items.Fade.BackgroundTransparency = 0 
-                Library:Tween(Items.Fade, {BackgroundTransparency = 1})
-
-                Items.Window.Visible = bool
-                Items.Window.Parent = bool and Library.Items or Library.Other
-                Items.Window.Position = dim2(0, Items.Button.AbsolutePosition.X + 2, 0, Items.Button.AbsolutePosition.Y + 74)
-            end
-            
-            function Cfg.Set(color, alpha)
-                if type(color) == "boolean" then 
-                    return
-                end 
-
-                if color then 
-                    h, s, v = color:ToHSV()
-                end
-                
-                if alpha then 
-                    a = alpha
-                end 
-                
-                local Color = hsv(h, s, v)
-
-                Items.SatValPicker.Position = dim2(s, 0, 1 - v, 0)
-                Items.AlphaPicker.Position = dim2(0, -1, a, -1)
-                Items.HuePicker.Position = dim2(0, -1, h, -1)
-                
-                Items.ButtonColor.BackgroundColor3 = hsv(h,s,v)
-                Items.Inner.BackgroundColor3 = hsv(h,1,1)
-
-                Flags[Cfg.Flag] = {
-                    Color = Color;
-                    Transparency = a 
-                }
-                
-                local Color = Items.ButtonColor.BackgroundColor3
-                Items.RGBInput.Text = string.format("%s, %s, %s, ", Library:Round(Color.R * 255), Library:Round(Color.G * 255), Library:Round(Color.B * 255))
-                Items.RGBInput.Text ..= Library:Round(1 - a, 0.01)
-                
-                Items.AlphaInput.Text = Library:ConvertHex(Color, 1 - a)
-
-                Cfg.Callback(Color, a)
-            end
-
-            function Cfg.UpdateColor() 
-                local Mouse = InputService:GetMouseLocation()
-                local offset = vec2(Mouse.X, Mouse.Y - gui_offset) 
-                
-                if DraggingSat then	
-                    s = math.clamp((offset - Items.Val.AbsolutePosition).X / Items.Val.AbsoluteSize.X, 0, 1)
-                    v = 1 - math.clamp((offset - Items.Val.AbsolutePosition).Y / Items.Val.AbsoluteSize.Y, 0, 1)
-                elseif DraggingHue then
-                    h = math.clamp((offset - Items.RGB.AbsolutePosition).Y / Items.RGB.AbsoluteSize.Y, 0, 1)
-                elseif DraggingAlpha then
-                    a = math.clamp((offset - Items.Alpha.AbsolutePosition).Y / Items.Alpha.AbsoluteSize.Y, 0, 1)
-                end
-
-                Cfg.Set()
-            end
-
-            Items.Button.MouseButton1Click:Connect(function()
-                Cfg.Open = not Cfg.Open
-                Cfg.SetVisible(Cfg.Open)            
-            end)
-
-            InputService.InputChanged:Connect(function(input)
-                if (DraggingSat or DraggingHue or DraggingAlpha) and input.UserInputType == Enum.UserInputType.MouseMovement then
-                    Cfg.UpdateColor() 
-                end
-            end)
-
-            Library:Connection(InputService.InputEnded, function(input)
-                if input.UserInputType == Enum.UserInputType.MouseButton1 then
-                    DraggingSat = false
-                    DraggingHue = false
-                    DraggingAlpha = false
-
-                    if not Library:Hovering({Items.Button, Items.Window}) then
-                        Cfg.SetVisible(false)
-                        Cfg.Open = false
-                    end 
-                end
-            end)    
-
-            Library:Connection(InputService.InputBegan, function(input, game_event)
-                if input.UserInputType == Enum.UserInputType.MouseButton1 then
-                    if not Library:Hovering({Items.Button, Items.Window}) then
-                        Cfg.SetVisible(false)
-                        Cfg.Open = false
-                    end 
-                end 
-            end)
-
-            Items.Alpha.MouseButton1Down:Connect(function()
-                DraggingAlpha = true 
-            end)
-            
-            Items.RGB.MouseButton1Down:Connect(function()
-                DraggingHue = true 
-            end)
-            
-            Items.Val.MouseButton1Down:Connect(function()
-                DraggingSat = true  
-            end)
-
-            Items.RGBInput.FocusLost:Connect(function()
-                local text = Items.RGBInput.Text
-                local r, g, b, a = Library:Convert(text)
-                
-                if r and g and b and a then 
-                    Cfg.Set(rgb(r, g, b), 1 - a)
-                end 
-            end)
-
-            Items.AlphaInput.FocusLost:Connect(function()
-                local Color, Alpha = Library:ConvertFromHex(Items.AlphaInput.Text)
-                Cfg.Set(Color, 1 - Alpha)
-            end)
-
-            Cfg.Set(Cfg.Color, Cfg.Alpha)
-            ConfigFlags[Cfg.Flag] = Cfg.Set
-
-            return setmetatable(Cfg, Library)
-        end 
-
-        function Library:GetConfig()
-            local Config = {}
-            
-            for Idx, Value in Flags do
-                if type(Value) == "table" and Value.key then
-                    Config[Idx] = {active = Value.Active, mode = Value.Mode, key = tostring(Value.Key)}
-                elseif type(Value) == "table" and Value["Transparency"] and Value["Color"] then
-                    Config[Idx] = {Transparency = Value["Transparency"], Color = Value["Color"]:ToHex()}
-                else
-                    Config[Idx] = Value
-                end
-            end 
-
-            return HttpService:JSONEncode(Config)
-        end
-
-        function Library:LoadConfig(JSON) 
-            local Config = HttpService:JSONDecode(JSON)
-            
-            for Idx, Value in Config do                
-                if Idx == "config_name_list" then 
-                    continue 
-                end
-
-                local Function = ConfigFlags[Idx]
-
-                if Function then 
-                    if type(Value) == "table" and Value["Transparency"] and Value["Color"] then
-                        Function(hex(Value["Color"]), Value["Transparency"])
-                    elseif type(Value) == "table" and Value["Active"] then 
-                        Function(Value)
-                    else
-                        Function(Value)
-                    end
-                end 
-            end 
-        end 
-        
-        function Library:Round(num, float) 
-            local Multiplier = 1 / (float or 1)
-            return math.floor(num * Multiplier + 0.5) / Multiplier
-        end
-
-        function Library:Themify(instance, theme, property)
-            table.insert(themes.utility[theme][property], instance)
-        end
-
-        function Library:SaveGradient(instance, theme)
-            table.insert(themes.gradients[theme], instance)
-        end
-
-        function Library:RefreshTheme(theme, color)
-            for property,instances in themes.utility[theme] do 
-                for _,object in instances do
-                    if object[property] == themes.preset[theme] then 
-                        object[property] = color 
-                    end
-                end 
-            end
-
-            themes.preset[theme] = color 
-        end 
-
-        function Library:Connection(signal, callback)
-            local connection = signal:Connect(callback)
-            
-            table.insert(Library.Connections, connection)
-
-            return connection 
-        end
-
-        function Library:CloseElement() 
-            if not (Library.OpenElement and Library.OpenElement.SetVisible) then 
-                return 
-            end 
-
-            Library.OpenElement.SetVisible(false)
-            Library.OpenElement.Open = false
-		end
-
-        function Library:CloseAllElements()
-            -- Close colorpicker
-            if Library.OpenElement and Library.OpenElement.SetVisible then
-                Library.OpenElement.SetVisible(false)
-                Library.OpenElement.Open = false
-                Library.OpenElement = {}
+function Library:RefreshTheme(theme, newColor)
+    for property, instances in ThemeObjects[theme] do
+        for _, obj in instances do
+            if obj[property] == Theme[theme] then
+                obj[property] = newColor
             end
         end
+    end
+    Theme[theme] = newColor
+end
 
-        function Library:Create(instance, options)
-            local ins = Instance.new(instance) 
+function Library:Connection(signal, callback)
+    local connection = signal:Connect(callback)
+    table.insert(Library.Connections, connection)
+    return connection
+end
 
-            for prop, value in options do
-                ins[prop] = value
-            end
+function Library:CloseAllElements()
+    if Library.OpenElement and Library.OpenElement.SetVisible then
+        Library.OpenElement:SetVisible(false)
+        Library.OpenElement.Open = false
+        Library.OpenElement = {}
+    end
+end
 
-            if ins == "TextButton" then 
-                ins["AutoButtonColor"] = false 
-                ins["Text"] = ""
-            end 
-            
-            return ins 
-        end
+function Library:Create(class, props)
+    local instance = Instance.new(class)
+    for prop, value in props do
+        instance[prop] = value
+    end
+    return instance
+end
 
-        function Library:Unload() 
-            if Library.Items then 
-                Library.Items:Destroy()
-            end
+function Library:Unload()
+    if Library.Items then Library.Items:Destroy() end
+    if Library.Other then Library.Other:Destroy() end
+    if Library.MobileToggle then Library.MobileToggle:Destroy() end
+    if Library.MobileLock then Library.MobileLock:Destroy() end
+    for _, connection in Library.Connections do
+        connection:Disconnect()
+    end
+    getgenv().Library = nil
+end
 
-            if Library.Other then 
-                Library.Other:Destroy()
-            end
-
-            if Library.MobileToggleButton then
-                Library.MobileToggleButton:Destroy()
-            end
-
-            if Library.MobileLockButton then
-                Library.MobileLockButton:Destroy()
-            end
-            
-            for _,connection in Library.Connections do 
-                connection:Disconnect() 
-                connection = nil 
-            end
-
-            getgenv().Library = nil 
-        end
-    --
+function Library:Window(properties)
+    local cfg = {
+        Prefix = properties.Prefix or "REPENT",
+        Suffix = properties.Suffix or "CC",
+        Size = properties.Size or dim2(0, 620, 0, 471),
+        TabInfo = nil,
+        Items = {},
+        Locked = false,
+        Visible = true,
+    }
     
-    -- Library element functions
-        function Library:Window(properties)
-            local Cfg = {
-                Prefix = properties.Prefix or "XEZIOS";
-                Suffix = properties.Suffix or "PRIME";
-                Size = properties.Size or dim2(0, 620, 0, 471);
-                TabInfo;
-                Items = {};
-                Locked = false;
-                Visible = true;
-            }
-            
-            Library.Items = Library:Create( "ScreenGui" , {
-                Parent = CoreGui;
-                Name = "\0";
-                Enabled = true;
-                ZIndexBehavior = Enum.ZIndexBehavior.Sibling;
-                IgnoreGuiInset = true;
-            });
-            
-            Library.Other = Library:Create( "ScreenGui" , {
-                Parent = CoreGui;
-                Name = "\0";
-                Enabled = false;
-                ZIndexBehavior = Enum.ZIndexBehavior.Sibling;
-                IgnoreGuiInset = true;
-            }); 
-
-            local Items = Cfg.Items; do
-                Items.Window = Library:Create( "Frame" , {
-                    Parent = Library.Items;
-                    Name = "\0";
-                    BorderColor3 = rgb(0, 0, 0);
-                    BorderSizePixel = 0;
-                    BackgroundColor3 = rgb(20, 20, 20)
-                }); Library:Themify(Items.Window, "window_outline", "BackgroundColor3");
-                
-                -- Mobile sizing
-                if IsMobile then
-                    Items.Window.Size = UDim2.new(0, Cfg.Size.X.Offset * 0.9, 0, Cfg.Size.Y.Offset * 0.75)
-                    Items.Window.Position = UDim2.new(0.5, -Items.Window.Size.X.Offset / 2, 0.5, -Items.Window.Size.Y.Offset / 2)
-                else
-                    Items.Window.Size = Cfg.Size
-                    Items.Window.Position = UDim2.new(0.5, -Cfg.Size.X.Offset / 2, 0.5, -Cfg.Size.Y.Offset / 2)
-                end
-                
-                Items.Outline = Library:Create( "Frame" , {
-                    Parent = Items.Window;
-                    Name = "\0";
-                    Size = dim2(1, 0, 1, 0);
-                    BorderColor3 = rgb(0, 0, 0);
-                    ZIndex = 2;
-                    BorderSizePixel = 0;
-                    BackgroundColor3 = rgb(20, 20, 20)
-                }); Library:Themify(Items.Outline, "window_outline", "BackgroundColor3")
-                
-                Items.Inline = Library:Create( "Frame" , {
-                    Parent = Items.Outline;
-                    Name = "\0";
-                    Position = dim2(0, 1, 0, 1);
-                    BorderColor3 = rgb(0, 0, 0);
-                    Size = dim2(1, -2, 1, -2);
-                    BorderSizePixel = 0;
-                    BackgroundColor3 = themes.preset.inline
-                });	Library:Themify(Items.Inline, "inline", "BackgroundColor3")
-                
-                Items.TabHolderFrame = Library:Create( "Frame" , {
-                    Parent = Items.Inline;
-                    Name = "\0";
-                    Position = dim2(0, 1, 0, 1);
-                    BorderColor3 = rgb(0, 0, 0);
-                    Size = dim2(0, 139, 1, -2);
-                    BorderSizePixel = 0;
-                    BackgroundColor3 = rgb(30, 30, 30)
-                });
-                
-                Items.Filler = Library:Create( "Frame" , {
-                    Parent = Items.TabHolderFrame;
-                    Name = "\0";
-                    Position = dim2(1, -1, 0, 0);
-                    BorderColor3 = rgb(0, 0, 0);
-                    Size = dim2(0, 1, 1, 0);
-                    BorderSizePixel = 0;
-                    BackgroundColor3 = themes.preset.inline
-                });	Library:Themify(Items.Filler, "inline", "BackgroundColor3")
-                
-                Items.TabHolder = Library:Create( "Frame" , {
-                    Parent = Items.TabHolderFrame;
-                    BackgroundTransparency = 1;
-                    Name = "\0";
-                    BorderColor3 = rgb(0, 0, 0);
-                    Size = dim2(1, 0, 1, 0);
-                    BorderSizePixel = 0;
-                    BackgroundColor3 = rgb(255, 255, 255)
-                });	
-                
-                Library:Create( "UIListLayout" , {
-                    Parent = Items.TabHolder;
-                    Padding = dim(0, 6);
-                    SortOrder = Enum.SortOrder.LayoutOrder
-                });
-                
-                Library:Create( "UIPadding" , {
-                    Parent = Items.TabHolder;
-                    PaddingTop = dim(0, 6)
-                });
-                
-                Items.PageHolder = Library:Create( "Frame" , {
-                    Parent = Items.Inline;
-                    Name = "\0";
-                    Position = dim2(0, 140, 0, 1);
-                    BorderColor3 = rgb(0, 0, 0);
-                    Size = dim2(1, -141, 1, -2);
-                    BorderSizePixel = 0;
-                    BackgroundColor3 = themes.preset.background
-                });	Library:Themify(Items.PageHolder, "background", "BackgroundColor3")
-                
-                Items.TitleHolder = Library:Create( "Frame" , {
-                    Parent = Items.PageHolder;
-                    BackgroundTransparency = 1;
-                    Name = "\0";
-                    BorderColor3 = rgb(0, 0, 0);
-                    Size = dim2(1, 0, 0, 43);
-                    BorderSizePixel = 0;
-                    BackgroundColor3 = rgb(255, 255, 255)
-                });	
-                
-                Items.Filler = Library:Create( "Frame" , {
-                    Parent = Items.TitleHolder;
-                    Name = "\0";
-                    Position = dim2(0, 0, 1, -1);
-                    BorderColor3 = rgb(0, 0, 0);
-                    Size = dim2(1, 0, 0, 1);
-                    BorderSizePixel = 0;
-                    BackgroundColor3 = themes.preset.inline
-                });	Library:Themify(Items.Filler, "inline", "BackgroundColor3")
-                
-                Items.SectionTitle = Library:Create( "TextLabel" , {
-                    RichText = true;
-                    Parent = Items.TitleHolder;
-                    TextColor3 = themes.preset.accent;
-                    BorderColor3 = rgb(0, 0, 0);
-                    Text = '<font color = "rgb(255,255,255)">' .. Cfg.Prefix .. '</font> ' .. Cfg.Suffix .. '';
-                    Name = "\0";
-                    AutomaticSize = Enum.AutomaticSize.XY;
-                    AnchorPoint = vec2(0, 0.5);
-                    BorderSizePixel = 0;
-                    BackgroundTransparency = 1;
-                    Position = dim2(0, 0, 0.5, 0);
-                    FontFace = Font.new("rbxassetid://12187365364", Enum.FontWeight.Medium, Enum.FontStyle.Normal);
-                    ZIndex = 2;
-                    TextSize = 20;
-                    BackgroundColor3 = rgb(255, 255, 255)
-                }); Library:Themify(Items.SectionTitle, "accent", "TextColor3")
-                
-                Library:Create( "UIPadding" , {
-                    Parent = Items.SectionTitle;
-                    PaddingRight = dim(0, 8);
-                    PaddingLeft = dim(0, 13)
-                });
-                
-                Items.Pages = Library:Create( "Frame" , {
-                    Parent = Items.PageHolder;
-                    Name = "\0";
-                    BackgroundTransparency = 1;
-                    Position = dim2(0, 0, 0, 43);
-                    BorderColor3 = rgb(0, 0, 0);
-                    Size = dim2(1, 0, 1, -43);
-                    BorderSizePixel = 0;
-                    BackgroundColor3 = rgb(255, 255, 255)
-                });	
-
-                Items.Fade = Library:Create( "Frame" , {
-                    Name = "\0";
-                    BackgroundTransparency = 1;
-                    Parent = Items.Pages;
-                    BorderColor3 = rgb(0, 0, 0);
-                    Size = dim2(1, 0, 1, 0);
-                    BorderSizePixel = 0;
-                    BackgroundColor3 = rgb(35, 35, 35);
-                    ZIndex = 2;
-                });	Library:Themify(Items.Fade, "background", "BackgroundColor3")                
-                
-                Items.Glow = Library:Create( "ImageLabel" , {
-                    ImageColor3 = rgb(147, 51, 234);
-                    ScaleType = Enum.ScaleType.Slice;
-                    ImageTransparency = 0.65;
-                    BorderColor3 = rgb(0, 0, 0);
-                    Parent = Items.Window;
-                    Name = "\0";
-                    Size = dim2(1, 40, 1, 40);
-                    Image = "rbxassetid://18245826428";
-                    BackgroundTransparency = 1;
-                    Position = dim2(0, -20, 0, -20);
-                    BackgroundColor3 = rgb(255, 255, 255);
-                    BorderSizePixel = 0;
-                    SliceCenter = rect(vec2(21, 21), vec2(79, 79))
-                });	Library:Themify(Items.Glow, "glow", "ImageColor3")                
-            end
-
-            do -- Other
-                Library:Draggify(Items.Window)
-                Library:Resizify(Items.Window)
-                Library:MobileDrag(Items.Window)
-            end
-
-            -- Mobile buttons (separate from menu)
-            if IsMobile then
-                -- Toggle UI Button
-                Library.MobileToggleButton = Library:Create("TextButton", {
-                    Parent = Library.Items,
-                    Text = "",
-                    Name = "ToggleUI",
-                    Size = UDim2.new(0, 40, 0, 40),
-                    Position = UDim2.new(0, 10, 0, 10),
-                    BackgroundColor3 = rgb(35, 35, 35),
-                    BorderColor3 = rgb(147, 51, 234),
-                    BorderSizePixel = 1,
-                    AutoButtonColor = false,
-                })
-                
-                Library:Create("UICorner", {
-                    Parent = Library.MobileToggleButton,
-                    CornerRadius = UDim.new(0, 8)
-                })
-                
-                Library:Create("UIStroke", {
-                    Parent = Library.MobileToggleButton,
-                    Color = rgb(147, 51, 234),
-                    Thickness = 1,
-                    Transparency = 0.5
-                })
-                
-                local ToggleIcon = Library:Create("TextLabel", {
-                    Parent = Library.MobileToggleButton,
-                    Text = "📱",
-                    Size = UDim2.new(1, 0, 1, 0),
-                    BackgroundTransparency = 1,
-                    TextSize = 20,
-                    TextColor3 = rgb(220, 220, 220),
-                })
-                
-                Library.MobileToggleButton.MouseButton1Click:Connect(function()
-                    Cfg.ToggleMenu(not Cfg.Visible)
-                end)
-                
-                -- Lock UI Button
-                Library.MobileLockButton = Library:Create("TextButton", {
-                    Parent = Library.Items,
-                    Text = "",
-                    Name = "LockUI",
-                    Size = UDim2.new(0, 40, 0, 40),
-                    Position = UDim2.new(0, 55, 0, 10),
-                    BackgroundColor3 = rgb(35, 35, 35),
-                    BorderColor3 = rgb(147, 51, 234),
-                    BorderSizePixel = 1,
-                    AutoButtonColor = false,
-                })
-                
-                Library:Create("UICorner", {
-                    Parent = Library.MobileLockButton,
-                    CornerRadius = UDim.new(0, 8)
-                })
-                
-                Library:Create("UIStroke", {
-                    Parent = Library.MobileLockButton,
-                    Color = rgb(147, 51, 234),
-                    Thickness = 1,
-                    Transparency = 0.5
-                })
-                
-                local LockIcon = Library:Create("TextLabel", {
-                    Parent = Library.MobileLockButton,
-                    Text = "🔓",
-                    Size = UDim2.new(1, 0, 1, 0),
-                    BackgroundTransparency = 1,
-                    TextSize = 20,
-                    TextColor3 = rgb(220, 220, 220),
-                })
-                
-                Library.MobileLockButton.MouseButton1Click:Connect(function()
-                    Library.Locked = not Library.Locked
-                    Cfg.Locked = Library.Locked
-                    LockIcon.Text = Library.Locked and "🔒" or "🔓"
-                    
-                    if Library.Locked then
-                        Library.MobileLockButton.BorderColor3 = rgb(255, 100, 100)
-                        local stroke = Library.MobileLockButton:FindFirstChildOfClass("UIStroke")
-                        if stroke then stroke.Color = rgb(255, 100, 100) end
-                    else
-                        Library.MobileLockButton.BorderColor3 = rgb(147, 51, 234)
-                        local stroke = Library.MobileLockButton:FindFirstChildOfClass("UIStroke")
-                        if stroke then stroke.Color = rgb(147, 51, 234) end
-                    end
-                end)
-            end
-
-            function Cfg.LockUI(bool)
-                Cfg.Locked = bool
-                Library.Locked = bool
-            end
-
-            function Cfg.ToggleMenu(bool)
-                if Cfg.Tweening then return end
-                
-                Cfg.Tweening = true
-                
-                if bool then
-                    Items.Window.Visible = true
-                    local Children = Items.Window:GetDescendants()
-                    table.insert(Children, Items.Window)
-                    
-                    local Tween
-                    for _, obj in Children do
-                        local Index = Library:GetTransparency(obj)
-                        if not Index then continue end
-                        
-                        if type(Index) == "table" then
-                            for _, prop in Index do
-                                Tween = Library:Fade(obj, prop, true)
-                            end
-                        else
-                            Tween = Library:Fade(obj, Index, true)
-                        end
-                    end
-                    
-                    Library:Connection(Tween.Completed, function()
-                        task.wait()
-                        Cfg.Tweening = false
-                        Cfg.Visible = true
-                    end)
-                else
-                    -- Close any open elements first
-                    Library:CloseAllElements()
-                    
-                    local Children = Items.Window:GetDescendants()
-                    table.insert(Children, Items.Window)
-                    
-                    local Tween
-                    for _, obj in Children do
-                        local Index = Library:GetTransparency(obj)
-                        if not Index then continue end
-                        
-                        if type(Index) == "table" then
-                            for _, prop in Index do
-                                Tween = Library:Fade(obj, prop, false)
-                            end
-                        else
-                            Tween = Library:Fade(obj, Index, false)
-                        end
-                    end
-                    
-                    Library:Connection(Tween.Completed, function()
-                        task.wait()
-                        Items.Window.Visible = false
-                        Cfg.Tweening = false
-                        Cfg.Visible = false
-                    end)
-                end
-            end
-
-            function Cfg.ChangeMenuTitle(text)
-                Items.SectionTitle.Text = text
-            end
-            
-            return setmetatable(Cfg, Library)
-        end 
-
-        function Library:Tab(properties)
-            local Cfg = {
-                Name = properties.name or properties.Name or "visuals"; 
-                Icon = properties.Icon or properties.icon or "rbxassetid://112730572155522";
-                Items = {};
-            }
-
-            local Items = Cfg.Items; do 
-                Items.Button = Library:Create( "TextButton" , {
-                    Active = false;
-                    BorderColor3 = rgb(0, 0, 0);
-                    Text = "";
-                    AutoButtonColor = false;
-                    Parent = self.Items.TabHolder;
-                    BackgroundTransparency = 1;
-                    Name = "\0";
-                    Size = dim2(1, 0, 0, 30);
-                    Selectable = false;
-                    BorderSizePixel = 0;
-                    BackgroundColor3 = rgb(255, 255, 255)
-                });
-                
-                Items.Holder = Library:Create( "Frame" , {
-                    Parent = Items.Button;
-                    Name = "\0";
-                    BackgroundTransparency = 1;
-                    Position = dim2(0, 6, 0, 0);
-                    BorderColor3 = rgb(0, 0, 0);
-                    Size = dim2(1, -13, 1, 0);
-                    BorderSizePixel = 0;
-                    BackgroundColor3 = themes.preset.visible_backgrounds
-                });	Library:Themify(Items.Holder, "visible_backgrounds", "BackgroundColor3")
-                
-                Items.Icon = Library:Create( "ImageLabel" , {
-                    ImageColor3 = themes.preset.deselected;
-                    BorderColor3 = rgb(0, 0, 0);
-                    Parent = Items.Holder;
-                    Name = "\0";
-                    AnchorPoint = vec2(0, 0.5);
-                    Image = Cfg.Icon;
-                    BackgroundTransparency = 1;
-                    Position = dim2(0, 8, 0.5, 0);
-                    Size = dim2(0, 14, 0, 14);
-                    BorderSizePixel = 0;
-                    BackgroundColor3 = rgb(255, 255, 255)
-                });	Library:Themify(Items.Icon, "deselected", "ImageColor3"); Library:Themify(Items.Icon, "accent", "ImageColor3")
-                
-                Items.SectionTitle = Library:Create( "TextLabel" , {
-                    FontFace = Font.new("rbxassetid://12187365364", Enum.FontWeight.Medium, Enum.FontStyle.Normal);
-                    TextColor3 = themes.preset.deselected;
-                    BorderColor3 = rgb(0, 0, 0);
-                    Text = Cfg.Name;
-                    Parent = Items.Holder;
-                    Name = "\0";
-                    AnchorPoint = vec2(0, 0.5);
-                    AutomaticSize = Enum.AutomaticSize.XY;
-                    BackgroundTransparency = 1;
-                    Position = dim2(0, 22, 0.5, 0);
-                    BorderSizePixel = 0;
-                    ZIndex = 2;
-                    TextSize = 14;
-                    BackgroundColor3 = rgb(30, 30, 30)
-                });	Library:Themify(Items.SectionTitle, "text_color", "TextColor3") Library:Themify(Items.SectionTitle, "deselected", "TextColor3") 
-                Items.SectionTitle.TextColor3 = themes.preset.deselected;
-                Library:Create( "UIPadding" , {
-                    Parent = Items.SectionTitle;
-                    PaddingRight = dim(0, 8);
-                    PaddingLeft = dim(0, 8)
-                });
-                
-                Items.Indicator = Library:Create( "ImageLabel" , {
-                    ImageColor3 = themes.preset.accent;
-                    ImageTransparency = 1;
-                    BackgroundTransparency = 1;
-                    BorderColor3 = rgb(0, 0, 0);
-                    Parent = Items.Button;
-                    AnchorPoint = vec2(0, 0.5);
-                    Image = "rbxassetid://126397903791071";
-                    Name = "\0";
-                    Position = dim2(0, 0, 0.5, 0);
-                    Size = dim2(0, 2, 0, 19);
-                    BorderSizePixel = 0;
-                    BackgroundColor3 = rgb(255, 255, 255)
-                });	Library:Themify(Items.Indicator, "accent", "ImageColor3")                
-
-                Items.Pages = Library:Create( "Frame" , {
-                    Parent = Library.Other;
-                    Visible = false;
-                    BackgroundTransparency = 1;
-                    Name = "\0";
-                    BorderColor3 = rgb(0, 0, 0);
-                    Size = dim2(1, 0, 1, 0);
-                    BorderSizePixel = 0;
-                    BackgroundColor3 = rgb(255, 255, 255)
-                });
-                
-                Library:Create( "UIListLayout" , {
-                    FillDirection = Enum.FillDirection.Horizontal;
-                    HorizontalFlex = Enum.UIFlexAlignment.Fill;
-                    Parent = Items.Pages;
-                    Padding = dim(0, 6);
-                    SortOrder = Enum.SortOrder.LayoutOrder;
-                    VerticalFlex = Enum.UIFlexAlignment.Fill
-                });
-                
-                Library:Create( "UIPadding" , {
-                    PaddingTop = dim(0, 6);
-                    PaddingBottom = dim(0, 6);
-                    Parent = Items.Pages;
-                    PaddingRight = dim(0, 6);
-                    PaddingLeft = dim(0, 6)
-                });
-                
-                Items.Left = Library:Create( "ScrollingFrame" , {
-                    ScrollBarImageColor3 = rgb(0, 0, 0);
-                    Active = true;
-                    AutomaticCanvasSize = Enum.AutomaticSize.Y;
-                    ScrollBarThickness = 0;
-                    Parent = Items.Pages;
-                    Name = "\0";
-                    BackgroundTransparency = 1;
-                    Size = dim2(0, 100, 0, 100);
-                    BackgroundColor3 = rgb(255, 255, 255);
-                    BorderColor3 = rgb(0, 0, 0);
-                    BorderSizePixel = 0;
-                    CanvasSize = dim2(0, 0, 0, 0)
-                });
-                
-                Library:Create( "UIListLayout" , {
-                    Parent = Items.Left;
-                    Padding = dim(0, 6);
-                    SortOrder = Enum.SortOrder.LayoutOrder;
-                    HorizontalFlex = Enum.UIFlexAlignment.Fill
-                });
-                
-                Items.Right = Library:Create( "ScrollingFrame" , {
-                    ScrollBarImageColor3 = rgb(0, 0, 0);
-                    Active = true;
-                    AutomaticCanvasSize = Enum.AutomaticSize.Y;
-                    ScrollBarThickness = 0;
-                    Parent = Items.Pages;
-                    Name = "\0";
-                    BackgroundTransparency = 1;
-                    Size = dim2(0, 100, 0, 100);
-                    BackgroundColor3 = rgb(255, 255, 255);
-                    BorderColor3 = rgb(0, 0, 0);
-                    BorderSizePixel = 0;
-                    CanvasSize = dim2(0, 0, 0, 0)
-                });
-                
-                Library:Create( "UIListLayout" , {
-                    Parent = Items.Right;
-                    Padding = dim(0, 6);
-                    SortOrder = Enum.SortOrder.LayoutOrder;
-                    HorizontalFlex = Enum.UIFlexAlignment.Fill
-                });                
-            end 
-
-            function Cfg.OpenTab() 
-                local Tab = self.TabInfo
-                
-                if Tab then
-                    Library:Tween(Tab.Indicator, {ImageTransparency = 1})
-                    Library:Tween(Tab.Holder, {BackgroundTransparency = 1})
-                    Library:Tween(Tab.Icon, {ImageColor3 = themes.preset.deselected})
-                    Library:Tween(Tab.SectionTitle, {TextColor3 = themes.preset.deselected})
-
-                    Tab.Pages.Visible = false
-                    Tab.Pages.Parent = Library.Other
-                end
-
-                -- Close any open elements when switching tabs
-                Library:CloseAllElements()
-
-                self.Items.Fade.BackgroundTransparency = 0 
-                Library:Tween(self.Items.Fade, {BackgroundTransparency = 1})
-
-                Library:Tween(Items.Indicator, {ImageTransparency = 0})
-                Library:Tween(Items.Holder, {BackgroundTransparency = 0})
-                Library:Tween(Items.Icon, {ImageColor3 = themes.preset.accent})
-                Library:Tween(Items.SectionTitle, {TextColor3 = themes.preset.text_color})
-
-                Items.Pages.Parent = self.Items.Pages;
-                Items.Pages.Visible = true
-                
-                self.TabInfo = Cfg.Items
-            end
-
-            Items.Button.MouseButton1Down:Connect(function()
-                Cfg.OpenTab()
-            end)
-
-            if not self.TabInfo then
-                Cfg.OpenTab()
-            end
-
-            return setmetatable(Cfg, Library)
-        end
-
-        function Library:Section(properties)
-            local Cfg = {
-                Name = properties.name or properties.Name or "Section"; 
-                Side = properties.side or properties.Side or "Left";
-                Items = {};
-            };
-            
-            local Items = Cfg.Items; do
-                Items.Section = Library:Create( "Frame" , {
-                    Parent = self.Items[ Cfg.Side ];
-                    Name = "\0";
-                    Size = dim2(0, 0, 0, 0);
-                    BorderColor3 = rgb(0, 0, 0);
-                    BorderSizePixel = 0;
-                    AutomaticSize = Enum.AutomaticSize.Y;
-                    BackgroundColor3 = themes.preset.inline
-                });	Library:Themify(Items.Section, "inline", "BackgroundColor3")
-                
-                Items.Inline = Library:Create( "Frame" , {
-                    Parent = Items.Section;
-                    Size = dim2(1, -2, 1, -2);
-                    Name = "\0";
-                    Position = dim2(0, 1, 0, 1);
-                    BorderColor3 = rgb(0, 0, 0);
-                    BorderSizePixel = 0;
-                    AutomaticSize = Enum.AutomaticSize.Y;
-                    BackgroundColor3 = themes.preset.visible_backgrounds
-                });	Library:Themify(Items.Inline, "visible_backgrounds", "BackgroundColor3")
-                
-                Items.SectionTitle = Library:Create( "TextLabel" , {
-                    FontFace = Font.new("rbxassetid://12187365364", Enum.FontWeight.SemiBold, Enum.FontStyle.Normal);
-                    TextColor3 = rgb(180, 180, 180);
-                    BorderColor3 = rgb(0, 0, 0);
-                    Text = Cfg.Name;
-                    Parent = Items.Inline;
-                    Name = "\0";
-                    AutomaticSize = Enum.AutomaticSize.XY;
-                    BackgroundTransparency = 1;
-                    Position = dim2(0, 0, 0, 6);
-                    BorderSizePixel = 0;
-                    ZIndex = 2;
-                    TextSize = 14;
-                    BackgroundColor3 = rgb(255, 255, 255)
-                });
-                
-                Library:Create( "UIPadding" , {
-                    Parent = Items.SectionTitle;
-                    PaddingRight = dim(0, 8);
-                    PaddingLeft = dim(0, 6)
-                });
-                
-                Items.Fill = Library:Create( "Frame" , {
-                    Parent = Items.Inline;
-                    Name = "\0";
-                    Position = dim2(0, 1, 0, 26);
-                    BorderColor3 = rgb(0, 0, 0);
-                    Size = dim2(1, -2, 0, 1);
-                    BorderSizePixel = 0;
-                    BackgroundColor3 = themes.preset.inline
-                });	Library:Themify(Items.Fill, "inline", "BackgroundColor3")
-                
-                Items.Elements = Library:Create( "Frame" , {
-                    BorderColor3 = rgb(0, 0, 0);
-                    Parent = Items.Inline;
-                    Name = "\0";
-                    BackgroundTransparency = 1;
-                    Position = dim2(0, 7, 0, 36);
-                    Size = dim2(1, -14, 0, 0);
-                    BorderSizePixel = 0;
-                    AutomaticSize = Enum.AutomaticSize.Y;
-                    BackgroundColor3 = rgb(255, 255, 255)
-                });
-                
-                Library:Create( "UIListLayout" , {
-                    Parent = Items.Elements;
-                    Padding = dim(0, 7);
-                    SortOrder = Enum.SortOrder.LayoutOrder
-                });
-                
-                Library:Create( "UIPadding" , {
-                    PaddingBottom = dim(0, 15);
-                    Parent = Items.Elements
-                });
-                
-                Library:Create( "UIPadding" , {
-                    PaddingBottom = dim(0, 2);
-                    Parent = Items.Section
-                });                
-            end;
-
-            return setmetatable(Cfg, Library)
-        end  
-
-        function Library:Toggle(properties) 
-            local Cfg = {
-                Name = properties.Name or "Toggle";
-                Flag = properties.Flag or properties.Name or "Toggle";
-                Enabled = properties.Default or false;
-                Callback = properties.callback or function() end;
-                Folding = properties.Folding or false;
-                Collapsable = properties.Collapsing or true;
-                Items = {};
-            }
-
-            local Items = Cfg.Items; do 
-                Items.Toggle = Library:Create( "TextButton" , {
-                    Active = false;
-                    TextTransparency = 1;
-                    Text = "";
-                    Parent = self.Items.Elements;
-                    AutoButtonColor = false;
-                    Name = "\0";
-                    Size = dim2(1, 0, 0, 0);
-                    BackgroundTransparency = 1;
-                    Selectable = false;
-                    BorderSizePixel = 0;
-                    BorderColor3 = rgb(0, 0, 0);
-                    AutomaticSize = Enum.AutomaticSize.Y;
-                    BackgroundColor3 = rgb(255, 255, 255)
-                });
-                
-                Items.Title = Library:Create( "TextLabel" , {
-                    FontFace = Font.new("rbxassetid://12187365364", Enum.FontWeight.SemiBold, Enum.FontStyle.Normal);
-                    TextColor3 = themes.preset.text_color;
-                    BorderColor3 = rgb(0, 0, 0);
-                    Text = Cfg.Name;
-                    Parent = Items.Toggle;
-                    Name = "\0";
-                    RichText = true;
-                    BackgroundTransparency = 1;
-                    AutomaticSize = Enum.AutomaticSize.XY;
-                    BorderSizePixel = 0;
-                    ZIndex = 2;
-                    TextSize = 14;
-                    BackgroundColor3 = rgb(255, 255, 255)
-                });	Library:Themify(Items.Title, "text_color", "TextColor3")
-                
-                Items.Components = Library:Create( "Frame" , {
-                    Parent = Items.Toggle;
-                    Name = "\0";
-                    Position = dim2(1, 0, 0, 0);
-                    BorderColor3 = rgb(0, 0, 0);
-                    Size = dim2(0, 0, 1, 0);
-                    BorderSizePixel = 0;
-                    BackgroundColor3 = rgb(255, 255, 255)
-                });
-                
-                Library:Create( "UIListLayout" , {
-                    FillDirection = Enum.FillDirection.Horizontal;
-                    HorizontalAlignment = Enum.HorizontalAlignment.Right;
-                    Parent = Items.Components;
-                    Padding = dim(0, 7);
-                    SortOrder = Enum.SortOrder.LayoutOrder
-                });
-                
-                Items.ToggleComponent = Library:Create( "Frame" , {
-                    Name = "\0";
-                    Parent = Items.Components;
-                    BorderColor3 = rgb(0, 0, 0);
-                    Size = dim2(0, 29, 0, 14);
-                    BorderSizePixel = 0;
-                    BackgroundColor3 = rgb(45, 45, 45)
-                });
-                
-                Library:Create( "UICorner" , {
-                    Parent = Items.ToggleComponent
-                });
-                
-                Items.Inline = Library:Create( "Frame" , {
-                    Parent = Items.ToggleComponent;
-                    Name = "\0";
-                    Position = dim2(0, 1, 0, 1);
-                    BorderColor3 = rgb(0, 0, 0);
-                    Size = dim2(1, -2, 1, -2);
-                    BorderSizePixel = 0;
-                    BackgroundColor3 = rgb(35, 35, 35)
-                });
-                
-                Library:Create( "UICorner" , {
-                    Parent = Items.Inline
-                });
-                
-                Library:Create( "UIGradient" , {
-                    Color = rgbseq{rgbkey(0, rgb(180, 180, 180)), rgbkey(1, rgb(180, 180, 180))};
-                    Parent = Items.Inline
-                });
-                
-                Items.Circle = Library:Create( "Frame" , {
-                    AnchorPoint = vec2(0, 0.5);
-                    Parent = Items.Inline;
-                    Name = "\0";
-                    Position = dim2(0, 2, 0.5, 0);
-                    BorderColor3 = rgb(0, 0, 0);
-                    Size = dim2(0, 8, 0, 8);
-                    BorderSizePixel = 0;
-                    BackgroundColor3 = rgb(150, 150, 150)
-                });
-                
-                Library:Create( "UICorner" , {
-                    Parent = Items.Circle;
-                    CornerRadius = dim(0, 999)
-                });                
-            end;
-            
-            function Cfg.Set(bool)
-                Flags[Cfg.Flag] = bool
-
-                Cfg.Callback(bool)
-
-                Library:Tween(Items.ToggleComponent, {BackgroundColor3 = bool and themes.preset.accent or rgb(45, 45, 45)})
-                Library:Tween(Items.Inline, {BackgroundColor3 = bool and themes.preset.accent or rgb(35, 35, 35)})
-                Library:Tween(Items.Circle, {BackgroundColor3 = bool and rgb(255, 255, 255) or rgb(150, 150, 150), Position = bool and dim2(1, -10, 0.5, 0) or dim2(0, 2, 0.5, 0)})                
-            end
-            
-            Items.Toggle.MouseButton1Click:Connect(function()
-                Cfg.Enabled = not Cfg.Enabled
-                Cfg.Set(Cfg.Enabled)
-            end)
-
-            Cfg.Set(Cfg.Default)
-
-            ConfigFlags[Cfg.Flag] = Cfg.Set
-
-            return setmetatable(Cfg, Library)
-        end 
+    Library.Items = Library:Create("ScreenGui", {
+        Parent = CoreGui,
+        Name = "\0",
+        Enabled = true,
+        ZIndexBehavior = Enum.ZIndexBehavior.Sibling,
+        IgnoreGuiInset = true,
+    })
+    
+    Library.Other = Library:Create("ScreenGui", {
+        Parent = CoreGui,
+        Name = "\0",
+        Enabled = false,
+        ZIndexBehavior = Enum.ZIndexBehavior.Sibling,
+        IgnoreGuiInset = true,
+    })
+    
+    local items = cfg.Items
+    
+    items.Window = Library:Create("Frame", {
+        Parent = Library.Items,
+        Name = "\0",
+        BorderColor3 = rgb(0, 0, 0),
+        BorderSizePixel = 0,
+        BackgroundColor3 = Theme.window_outline
+    })
+    Library:Themify(items.Window, "window_outline", "BackgroundColor3")
+    
+    if IsMobile then
+        items.Window.Size = dim2(0, cfg.Size.X.Offset * 0.9, 0, cfg.Size.Y.Offset * 0.75)
+        items.Window.Position = dim2(0.5, -items.Window.Size.X.Offset / 2, 0.5, -items.Window.Size.Y.Offset / 2)
+    else
+        items.Window.Size = cfg.Size
+        items.Window.Position = dim2(0.5, -cfg.Size.X.Offset / 2, 0.5, -cfg.Size.Y.Offset / 2)
+    end
+    
+    items.Outline = Library:Create("Frame", {
+        Parent = items.Window,
+        Name = "\0",
+        Size = dim2(1, 0, 1, 0),
+        BorderColor3 = rgb(0, 0, 0),
+        ZIndex = 2,
+        BorderSizePixel = 0,
+        BackgroundColor3 = Theme.window_outline
+    })
+    Library:Themify(items.Outline, "window_outline", "BackgroundColor3")
+    
+    items.Inline = Library:Create("Frame", {
+        Parent = items.Outline,
+        Name = "\0",
+        Position = dim2(0, 1, 0, 1),
+        BorderColor3 = rgb(0, 0, 0),
+        Size = dim2(1, -2, 1, -2),
+        BorderSizePixel = 0,
+        BackgroundColor3 = Theme.inline
+    })
+    Library:Themify(items.Inline, "inline", "BackgroundColor3")
+    
+    items.TabBar = Library:Create("Frame", {
+        Parent = items.Inline,
+        Name = "\0",
+        Position = dim2(0, 0, 0, 0),
+        BorderColor3 = rgb(0, 0, 0),
+        Size = dim2(0, 139, 1, 0),
+        BorderSizePixel = 0,
+        BackgroundColor3 = Theme.background
+    })
+    
+    items.TabHolder = Library:Create("Frame", {
+        Parent = items.TabBar,
+        BackgroundTransparency = 1,
+        Name = "\0",
+        BorderColor3 = rgb(0, 0, 0),
+        Size = dim2(1, 0, 1, 0),
+        BorderSizePixel = 0,
+        BackgroundColor3 = rgb(255, 255, 255)
+    })
+    
+    Library:Create("UIListLayout", {
+        Parent = items.TabHolder,
+        Padding = dim(0, 6),
+        SortOrder = Enum.SortOrder.LayoutOrder
+    })
+    
+    Library:Create("UIPadding", {
+        Parent = items.TabHolder,
+        PaddingTop = dim(0, 10)
+    })
+    
+    items.PageArea = Library:Create("Frame", {
+        Parent = items.Inline,
+        Name = "\0",
+        Position = dim2(0, 140, 0, 0),
+        BorderColor3 = rgb(0, 0, 0),
+        Size = dim2(1, -140, 1, 0),
+        BorderSizePixel = 0,
+        BackgroundColor3 = Theme.background
+    })
+    Library:Themify(items.PageArea, "background", "BackgroundColor3")
+    
+    items.TitleBar = Library:Create("Frame", {
+        Parent = items.PageArea,
+        BackgroundTransparency = 1,
+        Name = "\0",
+        BorderColor3 = rgb(0, 0, 0),
+        Size = dim2(1, 0, 0, 43),
+        BorderSizePixel = 0,
+        BackgroundColor3 = rgb(255, 255, 255)
+    })
+    
+    items.TitleBarLine = Library:Create("Frame", {
+        Parent = items.TitleBar,
+        Name = "\0",
+        Position = dim2(0, 0, 1, -1),
+        BorderColor3 = rgb(0, 0, 0),
+        Size = dim2(1, 0, 0, 1),
+        BorderSizePixel = 0,
+        BackgroundColor3 = Theme.inline
+    })
+    Library:Themify(items.TitleBarLine, "inline", "BackgroundColor3")
+    
+    items.Title = Library:Create("TextLabel", {
+        RichText = true,
+        Parent = items.TitleBar,
+        TextColor3 = Theme.accent,
+        BorderColor3 = rgb(0, 0, 0),
+        Text = '<font color = "rgb(255,255,255)">' .. cfg.Prefix .. '</font> ' .. cfg.Suffix .. '',
+        Name = "\0",
+        AutomaticSize = Enum.AutomaticSize.XY,
+        AnchorPoint = vec2(0, 0.5),
+        BorderSizePixel = 0,
+        BackgroundTransparency = 1,
+        Position = dim2(0, 13, 0.5, 0),
+        FontFace = Font.new("rbxassetid://12187365364", Enum.FontWeight.Medium, Enum.FontStyle.Normal),
+        ZIndex = 2,
+        TextSize = 20,
+        BackgroundColor3 = rgb(255, 255, 255)
+    })
+    Library:Themify(items.Title, "accent", "TextColor3")
+    
+    items.Pages = Library:Create("Frame", {
+        Parent = items.PageArea,
+        Name = "\0",
+        BackgroundTransparency = 1,
+        Position = dim2(0, 0, 0, 43),
+        BorderColor3 = rgb(0, 0, 0),
+        Size = dim2(1, 0, 1, -43),
+        BorderSizePixel = 0,
+        BackgroundColor3 = rgb(255, 255, 255)
+    })
+    
+    items.Fade = Library:Create("Frame", {
+        Name = "\0",
+        BackgroundTransparency = 1,
+        Parent = items.Pages,
+        BorderColor3 = rgb(0, 0, 0),
+        Size = dim2(1, 0, 1, 0),
+        BorderSizePixel = 0,
+        BackgroundColor3 = Theme.background,
+        ZIndex = 2,
+    })
+    Library:Themify(items.Fade, "background", "BackgroundColor3")
+    
+    items.Glow = Library:Create("ImageLabel", {
+        ImageColor3 = Theme.glow,
+        ScaleType = Enum.ScaleType.Slice,
+        ImageTransparency = 0.65,
+        BorderColor3 = rgb(0, 0, 0),
+        Parent = items.Window,
+        Name = "\0",
+        Size = dim2(1, 40, 1, 40),
+        Image = "rbxassetid://18245826428",
+        BackgroundTransparency = 1,
+        Position = dim2(0, -20, 0, -20),
+        BackgroundColor3 = rgb(255, 255, 255),
+        BorderSizePixel = 0,
+        SliceCenter = rect(vec2(21, 21), vec2(79, 79))
+    })
+    Library:Themify(items.Glow, "glow", "ImageColor3")
+    
+    Library:Draggify(items.Window)
+    Library:MobileDrag(items.Window)
+    
+    if IsMobile then
+        Library.MobileToggle = Library:Create("TextButton", {
+            Parent = Library.Items,
+            Text = "MENU",
+            Name = "ToggleUI",
+            Size = dim2(0, 50, 0, 40),
+            Position = dim2(0, 10, 0, 10),
+            BackgroundColor3 = Theme.inline,
+            BorderColor3 = Theme.accent,
+            BorderSizePixel = 1,
+            AutoButtonColor = false,
+            FontFace = Font.new("rbxassetid://12187365364", Enum.FontWeight.Bold, Enum.FontStyle.Normal),
+            TextColor3 = Theme.text_color,
+            TextSize = 14,
+        })
         
-        function Library:Slider(properties) 
-            local Cfg = {
-                Name = properties.Name,
-                Suffix = properties.Suffix or "",
-                Flag = properties.Flag or properties.Name or "Slider",
-                Callback = properties.Callback or function() end, 
-                Min = properties.Min or 0,
-                Max = properties.Max or 100,
-                Intervals = properties.Decimal or 1,
-                Value = properties.Default or 10, 
-                Dragging = false,
-                Items = {}
-            } 
-
-            local Items = Cfg.Items; do
-                Items.Slider = Library:Create( "Frame" , {
-                    Parent = self.Items.Elements;
-                    Name = "\0";
-                    BackgroundTransparency = 1;
-                    Size = dim2(1, 0, 0, 0);
-                    BorderColor3 = rgb(0, 0, 0);
-                    BorderSizePixel = 0;
-                    AutomaticSize = Enum.AutomaticSize.Y;
-                    BackgroundColor3 = rgb(255, 255, 255)
-                });
-                
-                Items.Title = Library:Create( "TextLabel" , {
-                    FontFace = Font.new("rbxassetid://12187365364", Enum.FontWeight.SemiBold, Enum.FontStyle.Normal);
-                    TextColor3 = themes.preset.text_color;
-                    BorderColor3 = rgb(0, 0, 0);
-                    Text = Cfg.Name;
-                    Parent = Items.Slider;
-                    Name = "\0";
-                    RichText = true;
-                    BackgroundTransparency = 1;
-                    AutomaticSize = Enum.AutomaticSize.XY;
-                    BorderSizePixel = 0;
-                    ZIndex = 2;
-                    TextSize = 14;
-                    BackgroundColor3 = rgb(255, 255, 255)
-                });	Library:Themify(Items.Title, "text_color", "TextColor3")
-                
-                Items.Components = Library:Create( "Frame" , {
-                    Parent = Items.Slider;
-                    Name = "\0";
-                    Position = dim2(1, 0, 0, 0);
-                    BorderColor3 = rgb(0, 0, 0);
-                    Size = dim2(0, 0, 0, 14);
-                    BorderSizePixel = 0;
-                    BackgroundColor3 = rgb(255, 255, 255)
-                });
-                
-                Library:Create( "UIListLayout" , {
-                    Parent = Items.Components;
-                    SortOrder = Enum.SortOrder.LayoutOrder;
-                    HorizontalAlignment = Enum.HorizontalAlignment.Right
-                });
-                
-                Items.Value = Library:Create( "TextLabel" , {
-                    FontFace = Font.new("rbxassetid://12187365364", Enum.FontWeight.SemiBold, Enum.FontStyle.Normal);
-                    TextColor3 = themes.preset.deselected;
-                    BorderColor3 = rgb(0, 0, 0);
-                    Text = "0.5";
-                    Parent = Items.Components;
-                    Name = "\0";
-                    BackgroundTransparency = 1;
-                    AutomaticSize = Enum.AutomaticSize.XY;
-                    BorderSizePixel = 0;
-                    ZIndex = 2;
-                    TextSize = 14;
-                    BackgroundColor3 = rgb(255, 255, 255)
-                });	Library:Themify(Items.Value, "deselected", "TextColor3")
-                
-                Items.Outline = Library:Create( "TextButton" , {
-                    Active = false;
-                    BorderColor3 = rgb(0, 0, 0);
-                    Text = "";
-                    AutoButtonColor = false;
-                    Parent = Items.Slider;
-                    Name = "\0";
-                    Position = dim2(0, 0, 0, 21);
-                    Size = dim2(1, 0, 0, 7);
-                    Selectable = false;
-                    BorderSizePixel = 0;
-                    BackgroundColor3 = rgb(30, 30, 30)
-                });
-                
-                Items.Fill = Library:Create( "Frame" , {
-                    Name = "\0";
-                    Parent = Items.Outline;
-                    BorderColor3 = rgb(0, 0, 0);
-                    Size = dim2(0.5, 0, 1, 0);
-                    BorderSizePixel = 0;
-                    BackgroundColor3 = themes.preset.accent
-                });	Library:Themify(Items.Fill, "accent", "BackgroundColor3")
-                
-                Items.Circle = Library:Create( "Frame" , {
-                    AnchorPoint = vec2(0.5, 0.5);
-                    Parent = Items.Fill;
-                    Name = "\0";
-                    Position = dim2(1, 0, 0.5, 0);
-                    BorderColor3 = rgb(0, 0, 0);
-                    Size = dim2(0, 11, 0, 11);
-                    BorderSizePixel = 0;
-                    BackgroundColor3 = themes.preset.accent
-                });	Library:Themify(Items.Circle, "accent", "BackgroundColor3")
-                
-                Library:Create( "UICorner" , {
-                    Parent = Items.Circle;
-                    CornerRadius = dim(0, 999)
-                });
-            end 
-
-            function Cfg.Set(value)
-                Cfg.Value = math.clamp(Library:Round(value, Cfg.Intervals), Cfg.Min, Cfg.Max)
-
-                Items.Fill.Size = dim2((Cfg.Value - Cfg.Min) / (Cfg.Max - Cfg.Min), 0, 1, 0)
-                Items.Value.Text = tostring(Cfg.Value) .. Cfg.Suffix
-
-                Flags[Cfg.Flag] = Cfg.Value
-                Cfg.Callback(Flags[Cfg.Flag])
-            end
-            
-            Items.Outline.MouseButton1Down:Connect(function()
-                Cfg.Dragging = true 
-            end)
-
-            Library:Connection(InputService.InputChanged, function(input)
-                if Cfg.Dragging and input.UserInputType == Enum.UserInputType.MouseMovement then 
-                    local Size = (input.Position.X - Items.Outline.AbsolutePosition.X) / Items.Outline.AbsoluteSize.X
-                    local Value = ((Cfg.Max - Cfg.Min) * Size) + Cfg.Min
-                    Cfg.Set(Value)
-                end
-            end)
-
-            Library:Connection(InputService.InputEnded, function(input)
-                if input.UserInputType == Enum.UserInputType.MouseButton1 then
-                    Cfg.Dragging = false
-                end 
-            end)
-
-            Cfg.Set(Cfg.Value)
-            ConfigFlags[Cfg.Flag] = Cfg.Set
-
-            return setmetatable(Cfg, Library)
-        end 
-
-        function Library:Dropdown(properties) 
-            local Cfg = {
-                Name = properties.Name or nil;
-                Flag = properties.Flag or properties.Name or "Dropdown";
-                Options = properties.Options or {""};
-                Callback = properties.Callback or function() end;
-                Multi = properties.Multi or false;
-                Scrolling = properties.Scrolling or false;
-                Open = false;
-                OptionInstances = {};
-                MultiItems = {};
-                Items = {};
-                Tweening = false;
-                Ignore = properties.Ignore or false;
-            }   
-
-            Cfg.Default = properties.Default or (Cfg.Multi and {Cfg.Items[1]}) or Cfg.Items[1] or "None"
-            Flags[Cfg.Flag] = Cfg.Default
-            
-            local Items = Cfg.Items; do 
-                Items.Dropdown = Library:Create( "Frame" , {
-                    Parent = self.Items.Elements;
-                    Name = "\0";
-                    BackgroundTransparency = 1;
-                    Size = dim2(1, 0, 0, 0);
-                    BorderColor3 = rgb(0, 0, 0);
-                    BorderSizePixel = 0;
-                    AutomaticSize = Enum.AutomaticSize.Y;
-                    BackgroundColor3 = rgb(255, 255, 255)
-                });
-                
-                Items.Title = Library:Create( "TextLabel" , {
-                    FontFace = Font.new("rbxassetid://12187365364", Enum.FontWeight.SemiBold, Enum.FontStyle.Normal);
-                    TextColor3 = themes.preset.text_color;
-                    BorderColor3 = rgb(0, 0, 0);
-                    Text = Cfg.Name;
-                    Parent = Items.Dropdown;
-                    Name = "\0";
-                    BackgroundTransparency = 1;
-                    RichText = true;
-                    AutomaticSize = Enum.AutomaticSize.XY;
-                    BorderSizePixel = 0;
-                    ZIndex = 2;
-                    TextSize = 14;
-                    BackgroundColor3 = rgb(255, 255, 255)
-                });	Library:Themify(Items.Title, "text_color", "TextColor3")
-                
-                Items.Outline = Library:Create( "TextButton" , {
-                    Active = false;
-                    BorderColor3 = rgb(0, 0, 0);
-                    Text = "";
-                    AutoButtonColor = false;
-                    Parent = Items.Dropdown;
-                    Name = "\0";
-                    Position = dim2(0, 0, 0, 21);
-                    Size = dim2(1, 0, 0, 20);
-                    Selectable = false;
-                    BorderSizePixel = 0;
-                    BackgroundColor3 = themes.preset.inline
-                });	Library:Themify(Items.Outline, "inline", "BackgroundColor3")
-                
-                Items.Inline = Library:Create( "Frame" , {
-                    Parent = Items.Outline;
-                    Name = "\0";
-                    Position = dim2(0, 1, 0, 1);
-                    BorderColor3 = rgb(0, 0, 0);
-                    Size = dim2(1, -2, 1, -2);
-                    BorderSizePixel = 0;
-                    BackgroundColor3 = rgb(45, 45, 45)
-                });
-                
-                Items.Arrow = Library:Create( "ImageLabel" , {
-                    ImageColor3 = rgb(220, 220, 220);
-                    BorderColor3 = rgb(0, 0, 0);
-                    Parent = Items.Inline;
-                    Name = "\0";
-                    AnchorPoint = vec2(0, 0.5);
-                    Image = "rbxassetid://70449495580650";
-                    BackgroundTransparency = 1;
-                    Position = dim2(1, -15, 0.5, 0);
-                    Size = dim2(0, 11, 0, 9);
-                    BorderSizePixel = 0;
-                    BackgroundColor3 = rgb(255, 255, 255)
-                });
-                
-                Items.InnerText = Library:Create( "TextLabel" , {
-                    FontFace = Font.new("rbxassetid://12187365364", Enum.FontWeight.SemiBold, Enum.FontStyle.Normal);
-                    TextColor3 = themes.preset.text_color;
-                    BorderColor3 = rgb(0, 0, 0);
-                    Text = "Option1, Option2, Option3";
-                    Parent = Items.Inline;
-                    Name = "\0";
-                    AnchorPoint = vec2(0, 0.5);
-                    AutomaticSize = Enum.AutomaticSize.XY;
-                    BackgroundTransparency = 1;
-                    Position = dim2(0, 4, 0.5, 1);
-                    BorderSizePixel = 0;
-                    ZIndex = 2;
-                    TextSize = 14;
-                    BackgroundColor3 = rgb(255, 255, 255)
-                });	Library:Themify(Items.InnerText, "text_color", "TextColor3")                
-                
-                Items.DropdownElements = Library:Create( "Frame" , {
-                    Parent = Library.Other;
-                    Size = dim2(0, 211, 0, 20);
-                    Name = "\0";
-                    Position = dim2(0, 0, 0, 21);
-                    BorderColor3 = rgb(0, 0, 0);
-                    BorderSizePixel = 0;
-                    AutomaticSize = Enum.AutomaticSize.Y;
-                    BackgroundColor3 = themes.preset.inline
-                });	Library:Themify(Items.DropdownElements, "inline", "BackgroundColor3")
-                
-                Items.DropdownHolder = Library:Create( "Frame" , {
-                    Parent = Items.DropdownElements;
-                    Size = dim2(1, -2, 1, -2);
-                    Name = "\0";
-                    Position = dim2(0, 1, 0, 1);
-                    BorderColor3 = rgb(0, 0, 0);
-                    BorderSizePixel = 0;
-                    AutomaticSize = Enum.AutomaticSize.Y;
-                    BackgroundColor3 = rgb(45, 45, 45)
-                });
-                
-                Library:Create( "UIListLayout" , {
-                    Parent = Items.DropdownHolder;
-                    SortOrder = Enum.SortOrder.LayoutOrder
-                });
-                
-                Library:Create( "UIPadding" , {
-                    PaddingBottom = dim(0, 2);
-                    Parent = Items.DropdownElements
-                });                        
-            end 
-
-            function Cfg.RenderOption(text)
-                local Button = Library:Create( "TextButton" , {
-                    Parent = Items.DropdownHolder;
-                    AutoButtonColor = false;
-                    FontFace = Font.new("rbxassetid://12187365364", Enum.FontWeight.SemiBold, Enum.FontStyle.Normal);
-                    Name = "\0";
-                    TextColor3 = themes.preset.deselected;
-                    BorderColor3 = rgb(0, 0, 0);
-                    Text = text;
-                    AutomaticSize = Enum.AutomaticSize.XY;
-                    Size = dim2(1, 0, 0, 0);
-                    AnchorPoint = vec2(0, 0.5);
-                    Position = dim2(0, 4, 0.5, 1);
-                    BackgroundTransparency = 1;
-                    TextXAlignment = Enum.TextXAlignment.Left;
-                    BorderSizePixel = 0;
-                    ZIndex = 2;
-                    TextSize = 14;
-                    BackgroundColor3 = rgb(255, 255, 255)
-                });	Library:Themify(Button, "deselected", "TextColor3")
-                
-                Library:Create( "UIPadding" , {
-                    PaddingTop = dim(0, 4);
-                    PaddingBottom = dim(0, 4);
-                    Parent = Button;
-                    PaddingRight = dim(0, 4);
-                    PaddingLeft = dim(0, 4)
-                });                   
-
-                table.insert(Cfg.OptionInstances, Button)
-
-                return Button
-            end
-            
-            function Cfg.SetVisible(bool)
-                Items.DropdownElements.Position = dim2(0, Items.Outline.AbsolutePosition.X, 0, Items.Outline.AbsolutePosition.Y + 80)
-				Items.DropdownElements.Size = dim_offset(Items.Outline.AbsoluteSize.X + 1, 0)
-                Items.DropdownElements.Visible = bool 
-                Items.DropdownElements.Parent = bool and Library.Items or Library.Other
-
-                Library:Tween(Items.Arrow, {Rotation = bool and 180 or 0})
-            end
-            
-            function Cfg.Set(value)
-                local Selected = {}
-                local IsTable = type(value) == "table"
-
-                for _,option in Cfg.OptionInstances do 
-                    if option.Text == value or (IsTable and table.find(value, option.Text)) then 
-                        table.insert(Selected, option.Text)
-                        Cfg.MultiItems = Selected
-                        option.TextColor3 = themes.preset.text_color
-                        option.BackgroundTransparency = 0.95
-                    else
-                        option.TextColor3 = themes.preset.deselected
-                        option.BackgroundTransparency = 1
-                    end
-                end
-
-                Items.InnerText.Text = if IsTable then table.concat(Selected, ", ") else Selected[1] or ""
-                Flags[Cfg.Flag] = if IsTable then Selected else Selected[1]
-                
-                Cfg.Callback(Flags[Cfg.Flag]) 
-            end
-            
-            function Cfg.RefreshOptions(options) 
-                for _,option in Cfg.OptionInstances do 
-                    option:Destroy() 
-                end
-                
-                Cfg.OptionInstances = {} 
-
-                for _,option in options do
-                    local Button = Cfg.RenderOption(option)
-                    
-                    Button.MouseButton1Down:Connect(function()
-                        if Cfg.Multi then 
-                            local Selected = table.find(Cfg.MultiItems, Button.Text)
-                            
-                            if Selected then 
-                                table.remove(Cfg.MultiItems, Selected)
-                            else
-                                table.insert(Cfg.MultiItems, Button.Text)
-                            end
-                            
-                            Cfg.Set(Cfg.MultiItems) 				
-                        else 
-                            Cfg.SetVisible(false)
-                            Cfg.Open = false
-                            
-                            Cfg.Set(Button.Text)
-                        end
-                    end)
-                end
-            end
-
-            Items.Outline.MouseButton1Click:Connect(function()
-                Cfg.Open = not Cfg.Open 
-
-                Cfg.SetVisible(Cfg.Open)
-            end)
-
-            Library:Connection(InputService.InputBegan, function(input, game_event)
-                if input.UserInputType == Enum.UserInputType.MouseButton1 then
-                    if not Library:Hovering({Items.DropdownElements, Items.Dropdown}) then
-                        Cfg.SetVisible(false)
-                        Cfg.Open = false
-                    end 
-                end 
-            end)
-
-            Flags[Cfg.Flag] = {} 
-            ConfigFlags[Cfg.Flag] = Cfg.Set
-            
-            Cfg.RefreshOptions(Cfg.Options)
-            Cfg.Set(Cfg.Default)
-                
-            return setmetatable(Cfg, Library)
-        end
-
-        function Library:Label(properties)
-            local Cfg = {
-                Name = properties.Name or "Label",
-                Items = {};
-            }
-
-            local Items = Cfg.Items; do 
-                Items.Label = Library:Create( "Frame" , {
-                    Parent = self.Items.Elements;
-                    Name = "\0";
-                    BackgroundTransparency = 1;
-                    Size = dim2(1, 0, 0, 0);
-                    BorderColor3 = rgb(0, 0, 0);
-                    BorderSizePixel = 0;
-                    AutomaticSize = Enum.AutomaticSize.Y;
-                    BackgroundColor3 = rgb(255, 255, 255)
-                });
-                
-                Items.Title = Library:Create( "TextLabel" , {
-                    FontFace = Font.new("rbxassetid://12187365364", Enum.FontWeight.SemiBold, Enum.FontStyle.Normal);
-                    TextColor3 = themes.preset.text_color;
-                    BorderColor3 = rgb(0, 0, 0);
-                    Text = Cfg.Name;
-                    Parent = Items.Label;
-                    Name = "\0";
-                    BackgroundTransparency = 1;
-                    RichText = true;
-                    AutomaticSize = Enum.AutomaticSize.XY;
-                    BorderSizePixel = 0;
-                    ZIndex = 2;
-                    TextSize = 14;
-                    BackgroundColor3 = rgb(255, 255, 255)
-                });	Library:Themify(Items.Title, "text_color", "TextColor3")
-                
-                Items.Components = Library:Create( "Frame" , {
-                    Parent = Items.Label;
-                    Name = "\0";
-                    Position = dim2(1, 0, 0, 0);
-                    BorderColor3 = rgb(0, 0, 0);
-                    Size = dim2(0, 0, 1, 0);
-                    BorderSizePixel = 0;
-                    BackgroundColor3 = rgb(255, 255, 255)
-                });
-                
-                Library:Create( "UIListLayout" , {
-                    FillDirection = Enum.FillDirection.Horizontal;
-                    HorizontalAlignment = Enum.HorizontalAlignment.Right;
-                    Parent = Items.Components;
-                    Padding = dim(0, 7);
-                    SortOrder = Enum.SortOrder.LayoutOrder
-                });                        
-            end 
-
-            function Cfg.Set(Text)
-                Items.Title.Text = Text
-            end 
-
-            return setmetatable(Cfg, Library)
-        end
+        Library:Create("UICorner", {Parent = Library.MobileToggle, CornerRadius = dim(0, 6)})
+        Library:Create("UIStroke", {
+            Parent = Library.MobileToggle,
+            Color = Theme.accent,
+            Thickness = 1,
+            Transparency = 0.3
+        })
         
-        function Library:Colorpicker(properties) 
-            local Cfg = {
-                Name = properties.Name or "Color", 
-                Flag = properties.Flag or properties.Name or "Colorpicker",
-                Callback = properties.Callback or function() end,
-                Color = properties.Color or color(1, 1, 1),
-                Alpha = properties.Alpha or properties.Transparency or 0,
-                Open = false;
-                Items = {};
-            }
+        Library.MobileToggle.MouseButton1Click:Connect(function()
+            cfg:ToggleMenu(not cfg.Visible)
+        end)
+        
+        Library.MobileLock = Library:Create("TextButton", {
+            Parent = Library.Items,
+            Text = "LOCK",
+            Name = "LockUI",
+            Size = dim2(0, 50, 0, 40),
+            Position = dim2(0, 65, 0, 10),
+            BackgroundColor3 = Theme.inline,
+            BorderColor3 = Theme.accent,
+            BorderSizePixel = 1,
+            AutoButtonColor = false,
+            FontFace = Font.new("rbxassetid://12187365364", Enum.FontWeight.Bold, Enum.FontStyle.Normal),
+            TextColor3 = Theme.text_color,
+            TextSize = 14,
+        })
+        
+        Library:Create("UICorner", {Parent = Library.MobileLock, CornerRadius = dim(0, 6)})
+        Library:Create("UIStroke", {
+            Parent = Library.MobileLock,
+            Color = Theme.accent,
+            Thickness = 1,
+            Transparency = 0.3
+        })
+        
+        Library.MobileLock.MouseButton1Click:Connect(function()
+            Library.Locked = not Library.Locked
+            cfg.Locked = Library.Locked
+            Library.MobileLock.Text = Library.Locked and "LOCKED" or "LOCK"
+            Library.MobileLock.BorderColor3 = Library.Locked and rgb(255, 100, 100) or Theme.accent
+            local stroke = Library.MobileLock:FindFirstChildOfClass("UIStroke")
+            if stroke then stroke.Color = Library.Locked and rgb(255, 100, 100) or Theme.accent end
+        end)
+    end
+    
+    function cfg:ToggleMenu(visible)
+        if cfg.Tweening then return end
+        cfg.Tweening = true
+        
+        if visible then
+            items.Window.Visible = true
+            local children = items.Window:GetDescendants()
+            table.insert(children, items.Window)
             
-            local Picker = self:Keypicker(Cfg)
-
-            local Items = Picker.Items; do
-                Cfg.Items = Items
-                Cfg.Set = Picker.Set
-                Cfg.SetVisible = Picker.SetVisible
-            end;
-            
-            Cfg.Set(Cfg.Color, Cfg.Alpha)
-            ConfigFlags[Cfg.Flag] = Cfg.Set
-
-            return setmetatable(Cfg, Library)
-        end 
-
-        function Library:Textbox(properties) 
-            local Cfg = {
-                Name = properties.Name or "TextBox",
-                PlaceHolder = properties.PlaceHolder or properties.PlaceHolderText or properties.Holder or properties.HolderText or "Type here...",
-                Default = properties.Default or "",
-                Flag = properties.Flag or properties.Name or "TextBox",
-                Callback = properties.Callback or function() end,
-                Items = {};
-            }
-
-            Flags[Cfg.Flag] = Cfg.default
-
-            local Items = Cfg.Items; do 
-                Items.Textbox = Library:Create( "Frame" , {
-                    Parent = self.Items.Elements;
-                    Name = "\0";
-                    BackgroundTransparency = 1;
-                    Size = dim2(1, 0, 0, 0);
-                    BorderColor3 = rgb(0, 0, 0);
-                    BorderSizePixel = 0;
-                    AutomaticSize = Enum.AutomaticSize.Y;
-                    BackgroundColor3 = rgb(255, 255, 255)
-                });
-                
-                Items.Title = Library:Create( "TextLabel" , {
-                    FontFace = Font.new("rbxassetid://12187365364", Enum.FontWeight.SemiBold, Enum.FontStyle.Normal);
-                    TextColor3 = themes.preset.text_color;
-                    BorderColor3 = rgb(0, 0, 0);
-                    RichText = true;
-                    Text = Cfg.Name;
-                    Parent = Items.Textbox;
-                    Name = "\0";
-                    BackgroundTransparency = 1;
-                    AutomaticSize = Enum.AutomaticSize.XY;
-                    BorderSizePixel = 0;
-                    ZIndex = 2;
-                    TextSize = 14;
-                    BackgroundColor3 = rgb(255, 255, 255)
-                });	Library:Themify(Items.Title, "text_color", "TextColor3")
-                
-                Items.Outline = Library:Create( "Frame" , {
-                    Parent = Items.Textbox;
-                    Name = "\0";
-                    Position = dim2(0, 0, 0, 21);
-                    BorderColor3 = rgb(0, 0, 0);
-                    Size = dim2(1, 0, 0, 20);
-                    BorderSizePixel = 0;
-                    BackgroundColor3 = rgb(45, 45, 45)
-                });
-                
-                Items.Inline = Library:Create( "Frame" , {
-                    Parent = Items.Outline;
-                    Name = "\0";
-                    Position = dim2(0, 1, 0, 1);
-                    BorderColor3 = rgb(0, 0, 0);
-                    Size = dim2(1, -2, 1, -2);
-                    BorderSizePixel = 0;
-                    BackgroundColor3 = rgb(45, 45, 45)
-                });
-                
-                Items.Input = Library:Create( "TextBox" , {
-                    Parent = Items.Inline;
-                    FontFace = Font.new("rbxassetid://12187365364", Enum.FontWeight.SemiBold, Enum.FontStyle.Normal);
-                    Name = "\0";
-                    Active = false;
-                    BorderColor3 = rgb(0, 0, 0);
-                    Text = Cfg.PlaceHolder;
-                    Size = dim2(1, 0, 1, 0);
-                    Selectable = false;
-                    Position = dim2(0, 3, 0, 0);
-                    BorderSizePixel = 0;
-                    TextTruncate = Enum.TextTruncate.AtEnd;
-                    BackgroundTransparency = 1;
-                    TextXAlignment = Enum.TextXAlignment.Left;
-                    AutomaticSize = Enum.AutomaticSize.XY;
-                    TextColor3 = rgb(220, 220, 220);
-                    TextSize = 14;
-                    BackgroundColor3 = rgb(255, 255, 255)
-                });                    
-            end 
-            
-            function Cfg.Set(text) 
-                Flags[Cfg.Flag] = text
-
-                Items.Input.Text = text
-
-                Cfg.Callback(text)
-            end 
-            
-            Items.Input:GetPropertyChangedSignal("Text"):Connect(function()
-                Cfg.Set(Items.Input.Text) 
-            end) 
-
-            if Cfg.Default then 
-                Cfg.Set(Cfg.Default) 
-            end
-
-            ConfigFlags[Cfg.Flag] = Cfg.Set
-
-            return setmetatable(Cfg, Library)
-        end
-
-        function Library:Keybind(properties) 
-            local Cfg = {
-                Flag = properties.Flag or properties.Name;
-                Callback = properties.Callback or function() end;
-                Name = properties.Name or nil; 
-                Key = properties.Key or nil;
-                Mode = properties.Mode or "Toggle";
-                Active = properties.Default or false; 
-                Open = false;
-                Binding;
-                Ignore = false;
-                Items = {}
-            }
-
-            Flags[Cfg.Flag] = {
-                Mode = Cfg.Mode,
-                Key = Cfg.Key, 
-                Active = Cfg.Active
-            }
-
-            local Items = Cfg.Items; do 
-                Items.KeybindOutline = Library:Create( "TextButton" , {
-                    Active = false;
-                    LayoutOrder = -1;
-                    BorderColor3 = rgb(0, 0, 0);
-                    Text = "";
-                    AutoButtonColor = false;
-                    Parent = self.Items.Components;
-                    Name = "\0";
-                    Size = dim2(0, 28, 0, 14);
-                    Selectable = false;
-                    BorderSizePixel = 0;
-                    AutomaticSize = Enum.AutomaticSize.X;
-                    BackgroundColor3 = rgb(45, 45, 45)
-                });
-                
-                Items.ButtonColor = Library:Create( "Frame" , {
-                    Parent = Items.KeybindOutline;
-                    Size = dim2(1, -2, 1, -2);
-                    Name = "\0";
-                    Position = dim2(0, 1, 0, 1);
-                    BorderColor3 = rgb(0, 0, 0);
-                    BorderSizePixel = 0;
-                    AutomaticSize = Enum.AutomaticSize.X;
-                    BackgroundColor3 = rgb(45, 45, 45)
-                });
-                
-                Library:Create( "UICorner" , {
-                    Parent = Items.ButtonColor;
-                    CornerRadius = dim(0, 4)
-                });
-                
-                Items.Key = Library:Create( "TextLabel" , {
-                    FontFace = Font.new("rbxassetid://12187365364", Enum.FontWeight.SemiBold, Enum.FontStyle.Normal);
-                    TextColor3 = themes.preset.text_color;
-                    BorderColor3 = rgb(0, 0, 0);
-                    Text = "LSHIFT";
-                    Parent = Items.ButtonColor;
-                    Name = "\0";
-                    TextXAlignment = Enum.TextXAlignment.Center;
-                    BackgroundTransparency = 1;
-                    AutomaticSize = Enum.AutomaticSize.XY;
-                    BorderSizePixel = 0;
-                    ZIndex = 2;
-                    TextSize = 14;
-                    BackgroundColor3 = rgb(255, 255, 255)
-                });	Library:Themify(Items.Key, "text_color", "TextColor3")
-                
-                Library:Create( "UIPadding" , {
-                    Parent = Items.Key;
-                    PaddingRight = dim(0, 4);
-                    PaddingLeft = dim(0, 5);
-                    PaddingBottom = dim(0, 2);
-                });
-                
-                Library:Create( "UICorner" , {
-                    Parent = Items.KeybindOutline;
-                    CornerRadius = dim(0, 4)
-                }); 
-                
-                Items.ModeHolder = Library:Create( "TextButton" , {
-                    Name = "\0";
-                    Text = "";
-                    AutoButtonColor = false;
-                    Position = dim2(0.522, 0, 0.471, 0);
-                    BorderColor3 = rgb(0, 0, 0);
-                    Size = dim2(0, 160, 0, 58);
-                    Visible = false;
-                    Parent = Library.Items;
-                    BorderSizePixel = 0;
-                    BackgroundColor3 = themes.preset.visible_backgrounds
-                });	Library:Themify(Items.ModeHolder, "visible_backgrounds", "BackgroundColor3")
-                
-                Items.Elements = Library:Create( "Frame" , {
-                    BorderColor3 = rgb(0, 0, 0);
-                    Parent = Items.ModeHolder;
-                    Name = "\0";
-                    BackgroundTransparency = 1;
-                    Position = dim2(0, 7, 0, 7);
-                    Size = dim2(1, -14, 0, 0);
-                    BorderSizePixel = 0;
-                    AutomaticSize = Enum.AutomaticSize.Y;
-                    BackgroundColor3 = rgb(255, 255, 255)
-                });
-                
-                Library:Create( "UIListLayout" , {
-                    Parent = Items.Elements;
-                    Padding = dim(0, 7);
-                    SortOrder = Enum.SortOrder.LayoutOrder
-                });
-                
-                Library:Create( "UIPadding" , {
-                    PaddingBottom = dim(0, 15);
-                    Parent = Items.Elements
-                });
-                
-                Items.Dropdown = setmetatable(Cfg, Library):Dropdown({Name = "Mode", Options = {"Hold", "Toggle", "Always"}, Flag = Cfg.Flag .. "OPTION_SETTINGS", Callback = function(options)
-                    if Cfg.Set then 
-                        Cfg.Set(options)
+            local tween
+            for _, obj in children do
+                local index = Library:GetTransparency(obj)
+                if not index then continue end
+                if type(index) == "table" then
+                    for _, prop in index do
+                        tween = Library:Fade(obj, prop, true)
                     end
-                end})
-            end 
-
-            function Cfg.SetMode(mode) 
-                Cfg.Mode = mode 
-
-                if mode == "Always" then
-                    Cfg.Set(true)
-                elseif mode == "Hold" then
-                    Cfg.Set(false)
+                else
+                    tween = Library:Fade(obj, index, true)
                 end
-
-                Flags[Cfg.Flag].Mode = mode
             end
-
-            function Cfg.Set(input)
-                if type(input) == "boolean" then 
-                    Cfg.Active = input
-
-                    if Cfg.Mode == "Always" then 
-                        Cfg.Active = true
-                    end
-                elseif tostring(input):find("Enum") then 
-                    input = input.Name == "Escape" and "NONE" or input
-                    
-                    Cfg.Key = input or "NONE"	
-                elseif table.find({"Toggle", "Hold", "Always"}, input) then 
-                    if input == "Always" then 
-                        Cfg.Active = true 
-                    end 
-
-                    Cfg.Mode = input
-                    Cfg.SetMode(Cfg.Mode) 
-                elseif type(input) == "table" then
-                    input.Key = type(input.Key) == "string" and input.Key ~= "NONE" and Library:ConvertEnum(input.key) or input.Key
-                    input.Key = input.Key == Enum.KeyCode.Escape and "NONE" or input.Key
-
-                    Cfg.Key = input.Key or "NONE"
-                    Cfg.Mode = input.Mode or "Toggle"
-
-                    if input.Active then
-                        Cfg.Active = input.Active
-                    end
-
-                    Cfg.SetMode(Cfg.Mode) 
-                end 
-
-                Cfg.Callback(Cfg.Active)
-
-                local text = (tostring(Cfg.Key) ~= "Enums" and (Keys[Cfg.Key] or tostring(Cfg.Key):gsub("Enum.", "")) or nil)
-                local __text = text and tostring(text):gsub("KeyCode.", ""):gsub("UserInputType.", "")
-
-                Items.Key.Text = " " .. __text .. " "
-
-                Flags[Cfg.Flag] = {
-                    mode = Cfg.Mode,
-                    key = Cfg.Key, 
-                    active = Cfg.Active
-                }
-            end
-
-            function Cfg.SetVisible(bool)
-                Items.ModeHolder.Visible = bool 
-                Items.ModeHolder.Position = dim2(0, Items.KeybindOutline.AbsolutePosition.X + 2, 0, Items.KeybindOutline.AbsolutePosition.Y + 74)
-            end
-
-            Items.KeybindOutline.MouseButton1Down:Connect(function()
+            
+            Library:Connection(tween.Completed, function()
                 task.wait()
-                Items.Key.Text = " ... "	
-
-                Cfg.Binding = Library:Connection(InputService.InputBegan, function(keycode, game_event)  
-                    Cfg.Set(keycode.KeyCode ~= Enum.KeyCode.Unknown and keycode.KeyCode or keycode.UserInputType)
-                    
-                    Cfg.Binding:Disconnect() 
-                    Cfg.Binding = nil
-                end)
+                cfg.Tweening = false
+                cfg.Visible = true
             end)
-
-            Items.KeybindOutline.MouseButton2Down:Connect(function()
-                Cfg.Open = not Cfg.Open 
-
-                Cfg.SetVisible(Cfg.Open)
-            end)
-
-            Library:Connection(InputService.InputBegan, function(input, game_event) 
-                if input.UserInputType == Enum.UserInputType.MouseButton1 then
-                    if not Library:Hovering({Items.ModeHolder, Items.Dropdown.Items.DropdownElements}) then 
-                        Items.Dropdown.SetVisible(false)
-                        Items.Dropdown.Visible = false
-
-                        Cfg.SetVisible(false)
-                        Cfg.Open = false;
-                    end 
-                end 
-
-                if not game_event then
-                    local selected_key = input.UserInputType == Enum.UserInputType.Keyboard and input.KeyCode or input.UserInputType
-
-                    if selected_key == Cfg.Key then 
-                        if Cfg.Mode == "Toggle" then 
-                            Cfg.Active = not Cfg.Active
-                            Cfg.Set(Cfg.Active)
-                        elseif Cfg.Mode == "Hold" then 
-                            Cfg.Set(true)
-                        end
+        else
+            Library:CloseAllElements()
+            
+            local children = items.Window:GetDescendants()
+            table.insert(children, items.Window)
+            
+            local tween
+            for _, obj in children do
+                local index = Library:GetTransparency(obj)
+                if not index then continue end
+                if type(index) == "table" then
+                    for _, prop in index do
+                        tween = Library:Fade(obj, prop, false)
                     end
+                else
+                    tween = Library:Fade(obj, index, false)
                 end
-            end)    
-
-            Library:Connection(InputService.InputEnded, function(input, game_event) 
-                if game_event then 
-                    return 
-                end 
-
-                local selected_key = input.UserInputType == Enum.UserInputType.Keyboard and input.KeyCode or input.UserInputType
+            end
+            
+            Library:Connection(tween.Completed, function()
+                task.wait()
+                items.Window.Visible = false
+                cfg.Tweening = false
+                cfg.Visible = false
+            end)
+        end
+    end
     
-                if selected_key == Cfg.Key then
-                    if Cfg.Mode == "Hold" then 
-                        Cfg.Set(false)
+    return setmetatable(cfg, Library)
+end
+
+function Library:Tab(properties)
+    local cfg = {
+        Name = properties.Name or properties.name or "Tab",
+        Icon = properties.Icon or properties.icon or "rbxassetid://112730572155522",
+        Items = {},
+    }
+    
+    local items = cfg.Items
+    
+    items.Button = Library:Create("TextButton", {
+        Active = false,
+        BorderColor3 = rgb(0, 0, 0),
+        Text = "",
+        AutoButtonColor = false,
+        Parent = self.Items.TabHolder,
+        BackgroundTransparency = 1,
+        Name = "\0",
+        Size = dim2(1, 0, 0, 30),
+        Selectable = false,
+        BorderSizePixel = 0,
+        BackgroundColor3 = rgb(255, 255, 255)
+    })
+    
+    items.Holder = Library:Create("Frame", {
+        Parent = items.Button,
+        Name = "\0",
+        BackgroundTransparency = 1,
+        Position = dim2(0, 6, 0, 0),
+        BorderColor3 = rgb(0, 0, 0),
+        Size = dim2(1, -13, 1, 0),
+        BorderSizePixel = 0,
+        BackgroundColor3 = Theme.visible_backgrounds
+    })
+    Library:Themify(items.Holder, "visible_backgrounds", "BackgroundColor3")
+    
+    items.Icon = Library:Create("ImageLabel", {
+        ImageColor3 = Theme.deselected,
+        BorderColor3 = rgb(0, 0, 0),
+        Parent = items.Holder,
+        Name = "\0",
+        AnchorPoint = vec2(0, 0.5),
+        Image = cfg.Icon,
+        BackgroundTransparency = 1,
+        Position = dim2(0, 8, 0.5, 0),
+        Size = dim2(0, 14, 0, 14),
+        BorderSizePixel = 0,
+        BackgroundColor3 = rgb(255, 255, 255)
+    })
+    Library:Themify(items.Icon, "deselected", "ImageColor3")
+    Library:Themify(items.Icon, "accent", "ImageColor3")
+    
+    items.Label = Library:Create("TextLabel", {
+        FontFace = Font.new("rbxassetid://12187365364", Enum.FontWeight.Medium, Enum.FontStyle.Normal),
+        TextColor3 = Theme.deselected,
+        BorderColor3 = rgb(0, 0, 0),
+        Text = cfg.Name,
+        Parent = items.Holder,
+        Name = "\0",
+        AnchorPoint = vec2(0, 0.5),
+        AutomaticSize = Enum.AutomaticSize.XY,
+        BackgroundTransparency = 1,
+        Position = dim2(0, 22, 0.5, 0),
+        BorderSizePixel = 0,
+        ZIndex = 2,
+        TextSize = 14,
+        BackgroundColor3 = rgb(30, 30, 30)
+    })
+    Library:Themify(items.Label, "text_color", "TextColor3")
+    Library:Themify(items.Label, "deselected", "TextColor3")
+    
+    items.Indicator = Library:Create("Frame", {
+        BackgroundTransparency = 1,
+        BorderColor3 = rgb(0, 0, 0),
+        Parent = items.Button,
+        AnchorPoint = vec2(0, 0.5),
+        Name = "\0",
+        Position = dim2(0, 0, 0.5, 0),
+        Size = dim2(0, 3, 0, 19),
+        BorderSizePixel = 0,
+        BackgroundColor3 = Theme.accent
+    })
+    Library:Themify(items.Indicator, "accent", "BackgroundColor3")
+    
+    Library:Create("UICorner", {Parent = items.Indicator, CornerRadius = dim(0, 2)})
+    
+    items.Pages = Library:Create("Frame", {
+        Parent = Library.Other,
+        Visible = false,
+        BackgroundTransparency = 1,
+        Name = "\0",
+        BorderColor3 = rgb(0, 0, 0),
+        Size = dim2(1, 0, 1, 0),
+        BorderSizePixel = 0,
+        BackgroundColor3 = rgb(255, 255, 255)
+    })
+    
+    Library:Create("UIListLayout", {
+        FillDirection = Enum.FillDirection.Horizontal,
+        HorizontalFlex = Enum.UIFlexAlignment.Fill,
+        Parent = items.Pages,
+        Padding = dim(0, 6),
+        SortOrder = Enum.SortOrder.LayoutOrder,
+        VerticalFlex = Enum.UIFlexAlignment.Fill
+    })
+    
+    Library:Create("UIPadding", {
+        PaddingTop = dim(0, 6),
+        PaddingBottom = dim(0, 6),
+        Parent = items.Pages,
+        PaddingRight = dim(0, 6),
+        PaddingLeft = dim(0, 6)
+    })
+    
+    items.Left = Library:Create("ScrollingFrame", {
+        ScrollBarImageColor3 = rgb(0, 0, 0),
+        Active = true,
+        AutomaticCanvasSize = Enum.AutomaticSize.Y,
+        ScrollBarThickness = 0,
+        Parent = items.Pages,
+        Name = "\0",
+        BackgroundTransparency = 1,
+        Size = dim2(0, 100, 0, 100),
+        BackgroundColor3 = rgb(255, 255, 255),
+        BorderColor3 = rgb(0, 0, 0),
+        BorderSizePixel = 0,
+        CanvasSize = dim2(0, 0, 0, 0)
+    })
+    
+    Library:Create("UIListLayout", {
+        Parent = items.Left,
+        Padding = dim(0, 6),
+        SortOrder = Enum.SortOrder.LayoutOrder,
+        HorizontalFlex = Enum.UIFlexAlignment.Fill
+    })
+    
+    items.Right = Library:Create("ScrollingFrame", {
+        ScrollBarImageColor3 = rgb(0, 0, 0),
+        Active = true,
+        AutomaticCanvasSize = Enum.AutomaticSize.Y,
+        ScrollBarThickness = 0,
+        Parent = items.Pages,
+        Name = "\0",
+        BackgroundTransparency = 1,
+        Size = dim2(0, 100, 0, 100),
+        BackgroundColor3 = rgb(255, 255, 255),
+        BorderColor3 = rgb(0, 0, 0),
+        BorderSizePixel = 0,
+        CanvasSize = dim2(0, 0, 0, 0)
+    })
+    
+    Library:Create("UIListLayout", {
+        Parent = items.Right,
+        Padding = dim(0, 6),
+        SortOrder = Enum.SortOrder.LayoutOrder,
+        HorizontalFlex = Enum.UIFlexAlignment.Fill
+    })
+    
+    function cfg:Open()
+        local tab = self.TabInfo
+        
+        if tab then
+            Library:Tween(tab.Indicator, {BackgroundTransparency = 1})
+            Library:Tween(tab.Holder, {BackgroundTransparency = 1})
+            Library:Tween(tab.Icon, {ImageColor3 = Theme.deselected})
+            Library:Tween(tab.Label, {TextColor3 = Theme.deselected})
+            tab.Pages.Visible = false
+            tab.Pages.Parent = Library.Other
+        end
+        
+        Library:CloseAllElements()
+        
+        self.Items.Fade.BackgroundTransparency = 0
+        Library:Tween(self.Items.Fade, {BackgroundTransparency = 1})
+        
+        Library:Tween(items.Indicator, {BackgroundTransparency = 0})
+        Library:Tween(items.Holder, {BackgroundTransparency = 0})
+        Library:Tween(items.Icon, {ImageColor3 = Theme.accent})
+        Library:Tween(items.Label, {TextColor3 = Theme.text_color})
+        
+        items.Pages.Parent = self.Items.Pages
+        items.Pages.Visible = true
+        
+        self.TabInfo = items
+    end
+    
+    items.Button.MouseButton1Down:Connect(function()
+        cfg:Open()
+    end)
+    
+    if not self.TabInfo then
+        cfg:Open()
+    end
+    
+    return setmetatable(cfg, Library)
+end
+
+function Library:Section(properties)
+    local cfg = {
+        Name = properties.Name or properties.name or "Section",
+        Side = properties.Side or properties.side or "Left",
+        Items = {},
+    }
+    
+    local items = cfg.Items
+    
+    items.Section = Library:Create("Frame", {
+        Parent = self.Items[cfg.Side],
+        Name = "\0",
+        Size = dim2(0, 0, 0, 0),
+        BorderColor3 = rgb(0, 0, 0),
+        BorderSizePixel = 0,
+        AutomaticSize = Enum.AutomaticSize.Y,
+        BackgroundColor3 = Theme.inline
+    })
+    Library:Themify(items.Section, "inline", "BackgroundColor3")
+    
+    items.Inline = Library:Create("Frame", {
+        Parent = items.Section,
+        Size = dim2(1, -2, 1, -2),
+        Name = "\0",
+        Position = dim2(0, 1, 0, 1),
+        BorderColor3 = rgb(0, 0, 0),
+        BorderSizePixel = 0,
+        AutomaticSize = Enum.AutomaticSize.Y,
+        BackgroundColor3 = Theme.visible_backgrounds
+    })
+    Library:Themify(items.Inline, "visible_backgrounds", "BackgroundColor3")
+    
+    items.Label = Library:Create("TextLabel", {
+        FontFace = Font.new("rbxassetid://12187365364", Enum.FontWeight.SemiBold, Enum.FontStyle.Normal),
+        TextColor3 = rgb(180, 180, 180),
+        BorderColor3 = rgb(0, 0, 0),
+        Text = cfg.Name,
+        Parent = items.Inline,
+        Name = "\0",
+        AutomaticSize = Enum.AutomaticSize.XY,
+        BackgroundTransparency = 1,
+        Position = dim2(0, 6, 0, 6),
+        BorderSizePixel = 0,
+        ZIndex = 2,
+        TextSize = 14,
+        BackgroundColor3 = rgb(255, 255, 255)
+    })
+    
+    items.Line = Library:Create("Frame", {
+        Parent = items.Inline,
+        Name = "\0",
+        Position = dim2(0, 1, 0, 26),
+        BorderColor3 = rgb(0, 0, 0),
+        Size = dim2(1, -2, 0, 1),
+        BorderSizePixel = 0,
+        BackgroundColor3 = Theme.inline
+    })
+    Library:Themify(items.Line, "inline", "BackgroundColor3")
+    
+    items.Elements = Library:Create("Frame", {
+        BorderColor3 = rgb(0, 0, 0),
+        Parent = items.Inline,
+        Name = "\0",
+        BackgroundTransparency = 1,
+        Position = dim2(0, 7, 0, 36),
+        Size = dim2(1, -14, 0, 0),
+        BorderSizePixel = 0,
+        AutomaticSize = Enum.AutomaticSize.Y,
+        BackgroundColor3 = rgb(255, 255, 255)
+    })
+    
+    Library:Create("UIListLayout", {
+        Parent = items.Elements,
+        Padding = dim(0, 7),
+        SortOrder = Enum.SortOrder.LayoutOrder
+    })
+    
+    Library:Create("UIPadding", {
+        PaddingBottom = dim(0, 15),
+        Parent = items.Elements
+    })
+    
+    Library:Create("UIPadding", {
+        PaddingBottom = dim(0, 2),
+        Parent = items.Section
+    })
+    
+    return setmetatable(cfg, Library)
+end
+
+function Library:Toggle(properties)
+    local cfg = {
+        Name = properties.Name or "Toggle",
+        Flag = properties.Flag or properties.Name or "Toggle",
+        Enabled = properties.Default or false,
+        Callback = properties.Callback or function() end,
+        Items = {},
+    }
+    
+    local items = cfg.Items
+    
+    items.Toggle = Library:Create("TextButton", {
+        Active = false,
+        TextTransparency = 1,
+        Text = "",
+        Parent = self.Items.Elements,
+        AutoButtonColor = false,
+        Name = "\0",
+        Size = dim2(1, 0, 0, 0),
+        BackgroundTransparency = 1,
+        Selectable = false,
+        BorderSizePixel = 0,
+        BorderColor3 = rgb(0, 0, 0),
+        AutomaticSize = Enum.AutomaticSize.Y,
+        BackgroundColor3 = rgb(255, 255, 255)
+    })
+    
+    items.Label = Library:Create("TextLabel", {
+        FontFace = Font.new("rbxassetid://12187365364", Enum.FontWeight.SemiBold, Enum.FontStyle.Normal),
+        TextColor3 = Theme.text_color,
+        BorderColor3 = rgb(0, 0, 0),
+        Text = cfg.Name,
+        Parent = items.Toggle,
+        Name = "\0",
+        RichText = true,
+        BackgroundTransparency = 1,
+        AutomaticSize = Enum.AutomaticSize.XY,
+        BorderSizePixel = 0,
+        ZIndex = 2,
+        TextSize = 14,
+        BackgroundColor3 = rgb(255, 255, 255)
+    })
+    Library:Themify(items.Label, "text_color", "TextColor3")
+    
+    items.Components = Library:Create("Frame", {
+        Parent = items.Toggle,
+        Name = "\0",
+        Position = dim2(1, 0, 0, 0),
+        BorderColor3 = rgb(0, 0, 0),
+        Size = dim2(0, 0, 1, 0),
+        BorderSizePixel = 0,
+        BackgroundColor3 = rgb(255, 255, 255)
+    })
+    
+    Library:Create("UIListLayout", {
+        FillDirection = Enum.FillDirection.Horizontal,
+        HorizontalAlignment = Enum.HorizontalAlignment.Right,
+        Parent = items.Components,
+        Padding = dim(0, 7),
+        SortOrder = Enum.SortOrder.LayoutOrder
+    })
+    
+    items.Switch = Library:Create("Frame", {
+        Name = "\0",
+        Parent = items.Components,
+        BorderColor3 = rgb(0, 0, 0),
+        Size = dim2(0, 29, 0, 14),
+        BorderSizePixel = 0,
+        BackgroundColor3 = Theme.inline
+    })
+    
+    Library:Create("UICorner", {Parent = items.Switch, CornerRadius = dim(0, 7)})
+    
+    items.SwitchInner = Library:Create("Frame", {
+        Parent = items.Switch,
+        Name = "\0",
+        Position = dim2(0, 1, 0, 1),
+        BorderColor3 = rgb(0, 0, 0),
+        Size = dim2(1, -2, 1, -2),
+        BorderSizePixel = 0,
+        BackgroundColor3 = Theme.background
+    })
+    
+    Library:Create("UICorner", {Parent = items.SwitchInner, CornerRadius = dim(0, 6)})
+    
+    items.Knob = Library:Create("Frame", {
+        AnchorPoint = vec2(0, 0.5),
+        Parent = items.SwitchInner,
+        Name = "\0",
+        Position = dim2(0, 2, 0.5, 0),
+        BorderColor3 = rgb(0, 0, 0),
+        Size = dim2(0, 8, 0, 8),
+        BorderSizePixel = 0,
+        BackgroundColor3 = Theme.deselected
+    })
+    
+    Library:Create("UICorner", {Parent = items.Knob, CornerRadius = dim(0, 999)})
+    
+    function cfg:Set(active)
+        Flags[cfg.Flag] = active
+        cfg.Callback(active)
+        
+        Library:Tween(items.Switch, {BackgroundColor3 = active and Theme.accent or Theme.inline})
+        Library:Tween(items.SwitchInner, {BackgroundColor3 = active and Theme.accent or Theme.background})
+        Library:Tween(items.Knob, {
+            BackgroundColor3 = active and rgb(255, 255, 255) or Theme.deselected,
+            Position = active and dim2(1, -10, 0.5, 0) or dim2(0, 2, 0.5, 0)
+        })
+    end
+    
+    items.Toggle.MouseButton1Click:Connect(function()
+        cfg.Enabled = not cfg.Enabled
+        cfg:Set(cfg.Enabled)
+    end)
+    
+    cfg:Set(cfg.Enabled)
+    ConfigFlags[cfg.Flag] = cfg.Set
+    
+    return setmetatable(cfg, Library)
+end
+
+function Library:Slider(properties)
+    local cfg = {
+        Name = properties.Name or "Slider",
+        Suffix = properties.Suffix or "",
+        Flag = properties.Flag or properties.Name or "Slider",
+        Callback = properties.Callback or function() end,
+        Min = properties.Min or 0,
+        Max = properties.Max or 100,
+        Decimal = properties.Decimal or 1,
+        Value = properties.Default or 10,
+        Dragging = false,
+        Items = {},
+    }
+    
+    local items = cfg.Items
+    
+    items.Slider = Library:Create("Frame", {
+        Parent = self.Items.Elements,
+        Name = "\0",
+        BackgroundTransparency = 1,
+        Size = dim2(1, 0, 0, 0),
+        BorderColor3 = rgb(0, 0, 0),
+        BorderSizePixel = 0,
+        AutomaticSize = Enum.AutomaticSize.Y,
+        BackgroundColor3 = rgb(255, 255, 255)
+    })
+    
+    items.Label = Library:Create("TextLabel", {
+        FontFace = Font.new("rbxassetid://12187365364", Enum.FontWeight.SemiBold, Enum.FontStyle.Normal),
+        TextColor3 = Theme.text_color,
+        BorderColor3 = rgb(0, 0, 0),
+        Text = cfg.Name,
+        Parent = items.Slider,
+        Name = "\0",
+        RichText = true,
+        BackgroundTransparency = 1,
+        AutomaticSize = Enum.AutomaticSize.XY,
+        BorderSizePixel = 0,
+        ZIndex = 2,
+        TextSize = 14,
+        BackgroundColor3 = rgb(255, 255, 255)
+    })
+    Library:Themify(items.Label, "text_color", "TextColor3")
+    
+    items.Value = Library:Create("TextLabel", {
+        FontFace = Font.new("rbxassetid://12187365364", Enum.FontWeight.SemiBold, Enum.FontStyle.Normal),
+        TextColor3 = Theme.deselected,
+        BorderColor3 = rgb(0, 0, 0),
+        Text = "10",
+        Parent = items.Slider,
+        Name = "\0",
+        BackgroundTransparency = 1,
+        AutomaticSize = Enum.AutomaticSize.XY,
+        AnchorPoint = vec2(1, 0),
+        Position = dim2(1, 0, 0, 0),
+        BorderSizePixel = 0,
+        ZIndex = 2,
+        TextSize = 14,
+        BackgroundColor3 = rgb(255, 255, 255)
+    })
+    Library:Themify(items.Value, "deselected", "TextColor3")
+    
+    items.Track = Library:Create("TextButton", {
+        Active = false,
+        BorderColor3 = rgb(0, 0, 0),
+        Text = "",
+        AutoButtonColor = false,
+        Parent = items.Slider,
+        Name = "\0",
+        Position = dim2(0, 0, 0, 21),
+        Size = dim2(1, 0, 0, 7),
+        Selectable = false,
+        BorderSizePixel = 0,
+        BackgroundColor3 = Theme.background
+    })
+    
+    Library:Create("UICorner", {Parent = items.Track, CornerRadius = dim(0, 3)})
+    
+    items.Fill = Library:Create("Frame", {
+        Name = "\0",
+        Parent = items.Track,
+        BorderColor3 = rgb(0, 0, 0),
+        Size = dim2(0.5, 0, 1, 0),
+        BorderSizePixel = 0,
+        BackgroundColor3 = Theme.accent
+    })
+    Library:Themify(items.Fill, "accent", "BackgroundColor3")
+    
+    Library:Create("UICorner", {Parent = items.Fill, CornerRadius = dim(0, 3)})
+    
+    items.Knob = Library:Create("Frame", {
+        AnchorPoint = vec2(0.5, 0.5),
+        Parent = items.Fill,
+        Name = "\0",
+        Position = dim2(1, 0, 0.5, 0),
+        BorderColor3 = rgb(0, 0, 0),
+        Size = dim2(0, 11, 0, 11),
+        BorderSizePixel = 0,
+        BackgroundColor3 = Theme.accent
+    })
+    Library:Themify(items.Knob, "accent", "BackgroundColor3")
+    
+    Library:Create("UICorner", {Parent = items.Knob, CornerRadius = dim(0, 999)})
+    
+    function cfg:Set(value)
+        cfg.Value = math.clamp(Library:Round(value, cfg.Decimal), cfg.Min, cfg.Max)
+        
+        local percent = (cfg.Value - cfg.Min) / (cfg.Max - cfg.Min)
+        items.Fill.Size = dim2(percent, 0, 1, 0)
+        items.Value.Text = tostring(cfg.Value) .. cfg.Suffix
+        
+        Flags[cfg.Flag] = cfg.Value
+        cfg.Callback(cfg.Value)
+    end
+    
+    function cfg:UpdateFromInput(input)
+        if IsMobile then
+            local pos = input.Position
+            local size = (pos.X - items.Track.AbsolutePosition.X) / items.Track.AbsoluteSize.X
+            local value = ((cfg.Max - cfg.Min) * size) + cfg.Min
+            cfg:Set(value)
+        else
+            local mousePos = InputService:GetMouseLocation()
+            local size = (mousePos.X - items.Track.AbsolutePosition.X) / items.Track.AbsoluteSize.X
+            local value = ((cfg.Max - cfg.Min) * size) + cfg.Min
+            cfg:Set(value)
+        end
+    end
+    
+    items.Track.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+            cfg.Dragging = true
+            cfg:UpdateFromInput(input)
+        end
+    end)
+    
+    Library:Connection(InputService.InputChanged, function(input)
+        if cfg.Dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+            cfg:UpdateFromInput(input)
+        end
+    end)
+    
+    Library:Connection(InputService.InputEnded, function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+            cfg.Dragging = false
+        end
+    end)
+    
+    cfg:Set(cfg.Value)
+    ConfigFlags[cfg.Flag] = cfg.Set
+    
+    return setmetatable(cfg, Library)
+end
+
+function Library:Dropdown(properties)
+    local cfg = {
+        Name = properties.Name or "Dropdown",
+        Flag = properties.Flag or properties.Name or "Dropdown",
+        Options = properties.Options or {""},
+        Callback = properties.Callback or function() end,
+        Multi = properties.Multi or false,
+        Open = false,
+        OptionInstances = {},
+        MultiItems = {},
+        Items = {},
+    }
+    
+    cfg.Default = properties.Default or (cfg.Multi and {cfg.Options[1]}) or cfg.Options[1] or "None"
+    Flags[cfg.Flag] = cfg.Default
+    
+    local items = cfg.Items
+    
+    items.Dropdown = Library:Create("Frame", {
+        Parent = self.Items.Elements,
+        Name = "\0",
+        BackgroundTransparency = 1,
+        Size = dim2(1, 0, 0, 0),
+        BorderColor3 = rgb(0, 0, 0),
+        BorderSizePixel = 0,
+        AutomaticSize = Enum.AutomaticSize.Y,
+        BackgroundColor3 = rgb(255, 255, 255)
+    })
+    
+    items.Label = Library:Create("TextLabel", {
+        FontFace = Font.new("rbxassetid://12187365364", Enum.FontWeight.SemiBold, Enum.FontStyle.Normal),
+        TextColor3 = Theme.text_color,
+        BorderColor3 = rgb(0, 0, 0),
+        Text = cfg.Name,
+        Parent = items.Dropdown,
+        Name = "\0",
+        BackgroundTransparency = 1,
+        RichText = true,
+        AutomaticSize = Enum.AutomaticSize.XY,
+        BorderSizePixel = 0,
+        ZIndex = 2,
+        TextSize = 14,
+        BackgroundColor3 = rgb(255, 255, 255)
+    })
+    Library:Themify(items.Label, "text_color", "TextColor3")
+    
+    items.Button = Library:Create("TextButton", {
+        Active = false,
+        BorderColor3 = rgb(0, 0, 0),
+        Text = "",
+        AutoButtonColor = false,
+        Parent = items.Dropdown,
+        Name = "\0",
+        Position = dim2(0, 0, 0, 21),
+        Size = dim2(1, 0, 0, 20),
+        Selectable = false,
+        BorderSizePixel = 0,
+        BackgroundColor3 = Theme.inline
+    })
+    Library:Themify(items.Button, "inline", "BackgroundColor3")
+    
+    items.ButtonInner = Library:Create("Frame", {
+        Parent = items.Button,
+        Name = "\0",
+        Position = dim2(0, 1, 0, 1),
+        BorderColor3 = rgb(0, 0, 0),
+        Size = dim2(1, -2, 1, -2),
+        BorderSizePixel = 0,
+        BackgroundColor3 = Theme.inline
+    })
+    
+    items.Arrow = Library:Create("ImageLabel", {
+        ImageColor3 = Theme.text_color,
+        BorderColor3 = rgb(0, 0, 0),
+        Parent = items.ButtonInner,
+        Name = "\0",
+        AnchorPoint = vec2(0, 0.5),
+        Image = "rbxassetid://70449495580650",
+        BackgroundTransparency = 1,
+        Position = dim2(1, -15, 0.5, 0),
+        Size = dim2(0, 11, 0, 9),
+        BorderSizePixel = 0,
+        BackgroundColor3 = rgb(255, 255, 255)
+    })
+    
+    items.SelectedText = Library:Create("TextLabel", {
+        FontFace = Font.new("rbxassetid://12187365364", Enum.FontWeight.SemiBold, Enum.FontStyle.Normal),
+        TextColor3 = Theme.text_color,
+        BorderColor3 = rgb(0, 0, 0),
+        Text = "Select",
+        Parent = items.ButtonInner,
+        Name = "\0",
+        AnchorPoint = vec2(0, 0.5),
+        AutomaticSize = Enum.AutomaticSize.XY,
+        BackgroundTransparency = 1,
+        Position = dim2(0, 4, 0.5, 0),
+        BorderSizePixel = 0,
+        ZIndex = 2,
+        TextSize = 14,
+        BackgroundColor3 = rgb(255, 255, 255)
+    })
+    Library:Themify(items.SelectedText, "text_color", "TextColor3")
+    
+    items.List = Library:Create("Frame", {
+        Parent = Library.Other,
+        Size = dim2(0, 211, 0, 20),
+        Name = "\0",
+        Position = dim2(0, 0, 0, 21),
+        BorderColor3 = rgb(0, 0, 0),
+        BorderSizePixel = 0,
+        AutomaticSize = Enum.AutomaticSize.Y,
+        BackgroundColor3 = Theme.inline
+    })
+    Library:Themify(items.List, "inline", "BackgroundColor3")
+    
+    items.ListInner = Library:Create("Frame", {
+        Parent = items.List,
+        Size = dim2(1, -2, 1, -2),
+        Name = "\0",
+        Position = dim2(0, 1, 0, 1),
+        BorderColor3 = rgb(0, 0, 0),
+        BorderSizePixel = 0,
+        AutomaticSize = Enum.AutomaticSize.Y,
+        BackgroundColor3 = Theme.inline
+    })
+    
+    Library:Create("UIListLayout", {
+        Parent = items.ListInner,
+        SortOrder = Enum.SortOrder.LayoutOrder
+    })
+    
+    Library:Create("UIPadding", {
+        PaddingBottom = dim(0, 2),
+        Parent = items.List
+    })
+    
+    function cfg:RenderOption(text)
+        local option = Library:Create("TextButton", {
+            Parent = items.ListInner,
+            AutoButtonColor = false,
+            FontFace = Font.new("rbxassetid://12187365364", Enum.FontWeight.SemiBold, Enum.FontStyle.Normal),
+            Name = "\0",
+            TextColor3 = Theme.deselected,
+            BorderColor3 = rgb(0, 0, 0),
+            Text = text,
+            AutomaticSize = Enum.AutomaticSize.XY,
+            Size = dim2(1, 0, 0, 0),
+            AnchorPoint = vec2(0, 0.5),
+            Position = dim2(0, 4, 0.5, 0),
+            BackgroundTransparency = 1,
+            TextXAlignment = Enum.TextXAlignment.Left,
+            BorderSizePixel = 0,
+            ZIndex = 2,
+            TextSize = 14,
+            BackgroundColor3 = rgb(255, 255, 255)
+        })
+        Library:Themify(option, "deselected", "TextColor3")
+        
+        Library:Create("UIPadding", {
+            PaddingTop = dim(0, 4),
+            PaddingBottom = dim(0, 4),
+            Parent = option,
+            PaddingRight = dim(0, 4),
+            PaddingLeft = dim(0, 4)
+        })
+        
+        table.insert(cfg.OptionInstances, option)
+        return option
+    end
+    
+    function cfg:SetVisible(visible)
+        items.List.Position = dim2(0, items.Button.AbsolutePosition.X, 0, items.Button.AbsolutePosition.Y + 80)
+        items.List.Size = dim_offset(items.Button.AbsoluteSize.X + 1, 0)
+        items.List.Visible = visible
+        items.List.Parent = visible and Library.Items or Library.Other
+        Library:Tween(items.Arrow, {Rotation = visible and 180 or 0})
+    end
+    
+    function cfg:Set(value)
+        local selected = {}
+        local isTable = type(value) == "table"
+        
+        for _, option in cfg.OptionInstances do
+            if option.Text == value or (isTable and table.find(value, option.Text)) then
+                table.insert(selected, option.Text)
+                cfg.MultiItems = selected
+                option.TextColor3 = Theme.text_color
+                option.BackgroundTransparency = 0.95
+            else
+                option.TextColor3 = Theme.deselected
+                option.BackgroundTransparency = 1
+            end
+        end
+        
+        items.SelectedText.Text = isTable and table.concat(selected, ", ") or selected[1] or ""
+        Flags[cfg.Flag] = isTable and selected or selected[1]
+        cfg.Callback(Flags[cfg.Flag])
+    end
+    
+    function cfg:RefreshOptions(options)
+        for _, option in cfg.OptionInstances do
+            option:Destroy()
+        end
+        cfg.OptionInstances = {}
+        
+        for _, option in options do
+            local button = cfg:RenderOption(option)
+            button.MouseButton1Down:Connect(function()
+                if cfg.Multi then
+                    local selected = table.find(cfg.MultiItems, button.Text)
+                    if selected then
+                        table.remove(cfg.MultiItems, selected)
+                    else
+                        table.insert(cfg.MultiItems, button.Text)
                     end
+                    cfg:Set(cfg.MultiItems)
+                else
+                    cfg:SetVisible(false)
+                    cfg.Open = false
+                    cfg:Set(button.Text)
                 end
             end)
-            
-            Cfg.Set({Mode = Cfg.Mode, Active = Cfg.Active, Key = Cfg.Key})           
-            ConfigFlags[Cfg.Flag] = Cfg.Set
-            Items.Dropdown.Set(Cfg.Mode)
-
-            return setmetatable(Cfg, Library)
         end
-        
-        function Library:Button(properties) 
-            local Cfg = {
-                Name = properties.Name or "Button",
-                Callback = properties.Callback or function() end,
-                Items = {};
-            }
-            
-            local Items = Cfg.Items; do 
-                Items.Button = Library:Create( "Frame" , {
-                    Parent = self.Items.Elements;
-                    Name = "\0";
-                    BackgroundTransparency = 1;
-                    Size = dim2(1, 0, 0, 0);
-                    BorderColor3 = rgb(0, 0, 0);
-                    BorderSizePixel = 0;
-                    AutomaticSize = Enum.AutomaticSize.Y;
-                    BackgroundColor3 = rgb(255, 255, 255)
-                });
-                
-                Items.Outline = Library:Create( "TextButton" , {
-                    Active = false;
-                    BorderColor3 = rgb(0, 0, 0);
-                    Text = "";
-                    AutoButtonColor = false;
-                    Name = "\0";
-                    Parent = Items.Button;
-                    Size = dim2(1, 0, 0, 20);
-                    Selectable = false;
-                    BorderSizePixel = 0;
-                    BackgroundColor3 = rgb(45, 45, 45)
-                });
-                
-                Items.Inline = Library:Create( "Frame" , {
-                    Parent = Items.Outline;
-                    Name = "\0";
-                    Position = dim2(0, 1, 0, 1);
-                    BorderColor3 = rgb(0, 0, 0);
-                    Size = dim2(1, -2, 1, -2);
-                    BorderSizePixel = 0;
-                    BackgroundColor3 = rgb(45, 45, 45)
-                });
-                
-                Items.Title = Library:Create( "TextLabel" , {
-                    FontFace = Font.new("rbxassetid://12187365364", Enum.FontWeight.SemiBold, Enum.FontStyle.Normal);
-                    TextColor3 = themes.preset.text_color;
-                    BorderColor3 = rgb(0, 0, 0);
-                    RichText = true;
-                    Text = Cfg.Name;
-                    Parent = Items.Inline;
-                    Name = "\0";
-                    AutomaticSize = Enum.AutomaticSize.XY;
-                    BackgroundTransparency = 1;
-                    Size = dim2(1, 0, 1, 0);
-                    BorderSizePixel = 0;
-                    ZIndex = 2;
-                    TextSize = 14;
-                    BackgroundColor3 = rgb(255, 255, 255)
-                });	Library:Themify(Items.Title, "text_color", "TextColor3")                                          
-            end 
-
-            Items.Outline.MouseButton1Click:Connect(function()
-                Items.Title.TextColor3 = rgb(255, 255, 255)
-                Library:Tween(Items.Title, {TextColor3 = themes.preset.text_color})
-                
-                Cfg.Callback()
-            end)
-            
-            return setmetatable(Cfg, Library)
-        end
-
-        function Library:Configs(window) 
-            local Tab = window:Tab({Name = "Settings"})
-
-            local Section = Tab:Section({Name = "Main", Side = "Left"})
-            ConfigHolder = Section:Dropdown({Name = "Configs", Options = {"Report", "This", "Error", "To", "Finobe"}, Callback = function(option) if Text then Text.Set(option) end end, Flag = "config_Name_list"}); Library:UpdateConfigList()
-            Section:Textbox({Name = "Config Name:", Flag = "config_Name_text", Default = ""})
-            Section:Button({Name = "Save", Callback = function() if Flags["config_Name_text"] == "" then return end writefile(Library.Directory .. "/configs/" .. Flags["config_Name_text"] .. ".cfg", Library:GetConfig()) Library:UpdateConfigList() Notifications:Create({Name = "Saved Config"}) end})
-            Section:Button({Name = "Load", Callback = function() if Flags["config_Name_text"] == "" then return end Library:LoadConfig(readfile(Library.Directory .. "/configs/" .. Flags["config_Name_text"] .. ".cfg")) Library:UpdateConfigList() Notifications:Create({Name = "Loaded Config"}) end})
-            Section:Button({Name = "Delete", Callback = function() if Flags["config_Name_text"] == "" then return end delfile(Library.Directory .. "/configs/" .. Flags["config_Name_text"] .. ".cfg") Library:UpdateConfigList() Notifications:Create({Name = "Deleted Config"}) end})
-
-            local Section2 = Tab:Section({Name = "Other", Side = "Right"})
-            Section2:Label({Name = "Accent Color"}):Colorpicker({Callback = function(color, alpha) Library:RefreshTheme("accent", color) end, Color = themes.preset.accent})
-            Section2:Label({Name = "Window Outline"}):Colorpicker({Callback = function(color, alpha) Library:RefreshTheme("window_outline", color) end, Color = themes.preset.window_outline})
-            Section2:Label({Name = "Inline Elements"}):Colorpicker({Callback = function(color, alpha) Library:RefreshTheme("inline", color) end, Color = themes.preset.inline})
-            Section2:Label({Name = "Main Background"}):Colorpicker({Callback = function(color, alpha) Library:RefreshTheme("background", color) end, Color = themes.preset.background})
-            Section2:Label({Name = "Visible Backgrounds"}):Colorpicker({Callback = function(color, alpha) Library:RefreshTheme("visible_backgrounds", color) end, Color = themes.preset.visible_backgrounds})
-            Section2:Label({Name = "Text Color"}):Colorpicker({Callback = function(color, alpha) Library:RefreshTheme("text_color", color) end, Color = themes.preset.text_color})
-            Section2:Label({Name = "Glow Effect"}):Colorpicker({Callback = function(color, alpha) Library:RefreshTheme("glow", color) end, Color = themes.preset.glow})
-            Section2:Label({Name = "Deselected Elements"}):Colorpicker({Callback = function(color, alpha) Library:RefreshTheme("deselected", color) end, Color = themes.preset.deselected})
-
-            window.Tweening = true
-            Section:Label({Name = "Menu Bind"}):Keybind({Name = "Menu Bind", Callback = function(bool) 
-                if window.Tweening then
-                    return 
-                end 
-
-                window.ToggleMenu(bool) 
-            end, Default = true})
-
-            delay(2, function() window.Tweening = false end)
-        end
-    --
-
-    -- Notification Library
-        function Notifications:RefreshNotifications() 
-            local offset = 50
-            
-            for i, v in Notifications.Notifs do
-                local Position = vec2(20, offset)
-                Library:Tween(v, {Position = dim_offset(Position.X, Position.Y)}, TweenInfo.new(1, Enum.EasingStyle.Exponential, Enum.EasingDirection.Out))
-                offset += (v.AbsoluteSize.Y + 10)
+    end
+    
+    items.Button.MouseButton1Click:Connect(function()
+        cfg.Open = not cfg.Open
+        cfg:SetVisible(cfg.Open)
+        Library.OpenElement = cfg
+    end)
+    
+    Library:Connection(InputService.InputBegan, function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+            if not Library:Hovering({items.List, items.Dropdown}) then
+                cfg:SetVisible(false)
+                cfg.Open = false
             end
+        end
+    end)
+    
+    ConfigFlags[cfg.Flag] = cfg.Set
+    cfg:RefreshOptions(cfg.Options)
+    cfg:Set(cfg.Default)
+    
+    return setmetatable(cfg, Library)
+end
 
-            return offset
+function Library:Label(properties)
+    local cfg = {
+        Name = properties.Name or "Label",
+        Items = {},
+    }
+    
+    local items = cfg.Items
+    
+    items.Label = Library:Create("Frame", {
+        Parent = self.Items.Elements,
+        Name = "\0",
+        BackgroundTransparency = 1,
+        Size = dim2(1, 0, 0, 0),
+        BorderColor3 = rgb(0, 0, 0),
+        BorderSizePixel = 0,
+        AutomaticSize = Enum.AutomaticSize.Y,
+        BackgroundColor3 = rgb(255, 255, 255)
+    })
+    
+    items.Text = Library:Create("TextLabel", {
+        FontFace = Font.new("rbxassetid://12187365364", Enum.FontWeight.SemiBold, Enum.FontStyle.Normal),
+        TextColor3 = Theme.text_color,
+        BorderColor3 = rgb(0, 0, 0),
+        Text = cfg.Name,
+        Parent = items.Label,
+        Name = "\0",
+        BackgroundTransparency = 1,
+        RichText = true,
+        AutomaticSize = Enum.AutomaticSize.XY,
+        BorderSizePixel = 0,
+        ZIndex = 2,
+        TextSize = 14,
+        BackgroundColor3 = rgb(255, 255, 255)
+    })
+    Library:Themify(items.Text, "text_color", "TextColor3")
+    
+    items.Components = Library:Create("Frame", {
+        Parent = items.Label,
+        Name = "\0",
+        Position = dim2(1, 0, 0, 0),
+        BorderColor3 = rgb(0, 0, 0),
+        Size = dim2(0, 0, 1, 0),
+        BorderSizePixel = 0,
+        BackgroundColor3 = rgb(255, 255, 255)
+    })
+    
+    Library:Create("UIListLayout", {
+        FillDirection = Enum.FillDirection.Horizontal,
+        HorizontalAlignment = Enum.HorizontalAlignment.Right,
+        Parent = items.Components,
+        Padding = dim(0, 7),
+        SortOrder = Enum.SortOrder.LayoutOrder
+    })
+    
+    function cfg:Set(text)
+        items.Text.Text = text
+    end
+    
+    return setmetatable(cfg, Library)
+end
+
+function Library:Colorpicker(properties)
+    local cfg = {
+        Name = properties.Name or "Color",
+        Flag = properties.Flag or properties.Name or "Colorpicker",
+        Callback = properties.Callback or function() end,
+        Color = properties.Color or color(1, 1, 1),
+        Alpha = properties.Alpha or properties.Transparency or 0,
+        Open = false,
+        Items = {},
+    }
+    
+    local picker = self:Keypicker(cfg)
+    cfg.Items = picker.Items
+    cfg.Set = picker.Set
+    cfg.SetVisible = picker.SetVisible
+    
+    cfg:Set(cfg.Color, cfg.Alpha)
+    ConfigFlags[cfg.Flag] = cfg.Set
+    
+    return setmetatable(cfg, Library)
+end
+
+function Library:Textbox(properties)
+    local cfg = {
+        Name = properties.Name or "TextBox",
+        PlaceHolder = properties.PlaceHolder or properties.Placeholder or "Type here...",
+        Default = properties.Default or "",
+        Flag = properties.Flag or properties.Name or "TextBox",
+        Callback = properties.Callback or function() end,
+        Items = {},
+    }
+    
+    Flags[cfg.Flag] = cfg.Default
+    
+    local items = cfg.Items
+    
+    items.Textbox = Library:Create("Frame", {
+        Parent = self.Items.Elements,
+        Name = "\0",
+        BackgroundTransparency = 1,
+        Size = dim2(1, 0, 0, 0),
+        BorderColor3 = rgb(0, 0, 0),
+        BorderSizePixel = 0,
+        AutomaticSize = Enum.AutomaticSize.Y,
+        BackgroundColor3 = rgb(255, 255, 255)
+    })
+    
+    items.Label = Library:Create("TextLabel", {
+        FontFace = Font.new("rbxassetid://12187365364", Enum.FontWeight.SemiBold, Enum.FontStyle.Normal),
+        TextColor3 = Theme.text_color,
+        BorderColor3 = rgb(0, 0, 0),
+        RichText = true,
+        Text = cfg.Name,
+        Parent = items.Textbox,
+        Name = "\0",
+        BackgroundTransparency = 1,
+        AutomaticSize = Enum.AutomaticSize.XY,
+        BorderSizePixel = 0,
+        ZIndex = 2,
+        TextSize = 14,
+        BackgroundColor3 = rgb(255, 255, 255)
+    })
+    Library:Themify(items.Label, "text_color", "TextColor3")
+    
+    items.Outline = Library:Create("Frame", {
+        Parent = items.Textbox,
+        Name = "\0",
+        Position = dim2(0, 0, 0, 21),
+        BorderColor3 = rgb(0, 0, 0),
+        Size = dim2(1, 0, 0, 20),
+        BorderSizePixel = 0,
+        BackgroundColor3 = Theme.inline
+    })
+    
+    items.Input = Library:Create("TextBox", {
+        Parent = items.Outline,
+        FontFace = Font.new("rbxassetid://12187365364", Enum.FontWeight.SemiBold, Enum.FontStyle.Normal),
+        Name = "\0",
+        Active = false,
+        BorderColor3 = rgb(0, 0, 0),
+        Text = cfg.PlaceHolder,
+        Size = dim2(1, -8, 1, 0),
+        Selectable = false,
+        Position = dim2(0, 4, 0, 0),
+        BorderSizePixel = 0,
+        TextTruncate = Enum.TextTruncate.AtEnd,
+        BackgroundTransparency = 1,
+        TextXAlignment = Enum.TextXAlignment.Left,
+        AutomaticSize = Enum.AutomaticSize.XY,
+        TextColor3 = Theme.text_color,
+        TextSize = 14,
+        BackgroundColor3 = rgb(255, 255, 255)
+    })
+    
+    function cfg:Set(text)
+        Flags[cfg.Flag] = text
+        items.Input.Text = text
+        cfg.Callback(text)
+    end
+    
+    items.Input:GetPropertyChangedSignal("Text"):Connect(function()
+        cfg:Set(items.Input.Text)
+    end)
+    
+    if cfg.Default then
+        cfg:Set(cfg.Default)
+    end
+    
+    ConfigFlags[cfg.Flag] = cfg.Set
+    
+    return setmetatable(cfg, Library)
+end
+
+function Library:Keybind(properties)
+    local cfg = {
+        Flag = properties.Flag or properties.Name or "Keybind",
+        Callback = properties.Callback or function() end,
+        Name = properties.Name or "Keybind",
+        Key = properties.Key or nil,
+        Mode = properties.Mode or "Toggle",
+        Active = properties.Default or false,
+        Open = false,
+        Binding = nil,
+        Items = {},
+    }
+    
+    Flags[cfg.Flag] = {
+        Mode = cfg.Mode,
+        Key = cfg.Key,
+        Active = cfg.Active
+    }
+    
+    local items = cfg.Items
+    
+    items.Button = Library:Create("TextButton", {
+        Active = false,
+        LayoutOrder = -1,
+        BorderColor3 = rgb(0, 0, 0),
+        Text = "",
+        AutoButtonColor = false,
+        Parent = self.Items.Components,
+        Name = "\0",
+        Size = dim2(0, 28, 0, 14),
+        Selectable = false,
+        BorderSizePixel = 0,
+        AutomaticSize = Enum.AutomaticSize.X,
+        BackgroundColor3 = Theme.inline
+    })
+    
+    items.ButtonInner = Library:Create("Frame", {
+        Parent = items.Button,
+        Size = dim2(1, -2, 1, -2),
+        Name = "\0",
+        Position = dim2(0, 1, 0, 1),
+        BorderColor3 = rgb(0, 0, 0),
+        BorderSizePixel = 0,
+        AutomaticSize = Enum.AutomaticSize.X,
+        BackgroundColor3 = Theme.inline
+    })
+    
+    Library:Create("UICorner", {Parent = items.ButtonInner, CornerRadius = dim(0, 4)})
+    
+    items.KeyLabel = Library:Create("TextLabel", {
+        FontFace = Font.new("rbxassetid://12187365364", Enum.FontWeight.SemiBold, Enum.FontStyle.Normal),
+        TextColor3 = Theme.text_color,
+        BorderColor3 = rgb(0, 0, 0),
+        Text = "NONE",
+        Parent = items.ButtonInner,
+        Name = "\0",
+        TextXAlignment = Enum.TextXAlignment.Center,
+        BackgroundTransparency = 1,
+        AutomaticSize = Enum.AutomaticSize.XY,
+        BorderSizePixel = 0,
+        ZIndex = 2,
+        TextSize = 14,
+        BackgroundColor3 = rgb(255, 255, 255)
+    })
+    Library:Themify(items.KeyLabel, "text_color", "TextColor3")
+    
+    Library:Create("UIPadding", {
+        Parent = items.KeyLabel,
+        PaddingRight = dim(0, 4),
+        PaddingLeft = dim(0, 5),
+        PaddingBottom = dim(0, 2),
+    })
+    
+    Library:Create("UICorner", {Parent = items.Button, CornerRadius = dim(0, 4)})
+    
+    items.ModeHolder = Library:Create("TextButton", {
+        Name = "\0",
+        Text = "",
+        AutoButtonColor = false,
+        Position = dim2(0.5, 0, 0.5, 0),
+        BorderColor3 = rgb(0, 0, 0),
+        Size = dim2(0, 160, 0, 58),
+        Visible = false,
+        Parent = Library.Items,
+        BorderSizePixel = 0,
+        BackgroundColor3 = Theme.visible_backgrounds
+    })
+    Library:Themify(items.ModeHolder, "visible_backgrounds", "BackgroundColor3")
+    
+    items.ModeElements = Library:Create("Frame", {
+        BorderColor3 = rgb(0, 0, 0),
+        Parent = items.ModeHolder,
+        Name = "\0",
+        BackgroundTransparency = 1,
+        Position = dim2(0, 7, 0, 7),
+        Size = dim2(1, -14, 0, 0),
+        BorderSizePixel = 0,
+        AutomaticSize = Enum.AutomaticSize.Y,
+        BackgroundColor3 = rgb(255, 255, 255)
+    })
+    
+    Library:Create("UIListLayout", {
+        Parent = items.ModeElements,
+        Padding = dim(0, 7),
+        SortOrder = Enum.SortOrder.LayoutOrder
+    })
+    
+    Library:Create("UIPadding", {
+        PaddingBottom = dim(0, 15),
+        Parent = items.ModeElements
+    })
+    
+    items.ModeDropdown = setmetatable(cfg, Library):Dropdown({
+        Name = "Mode",
+        Options = {"Hold", "Toggle", "Always"},
+        Flag = cfg.Flag .. "_OPTION_SETTINGS",
+        Callback = function(mode)
+            if cfg.Set then cfg:Set(mode) end
+        end
+    })
+    
+    function cfg:SetMode(mode)
+        cfg.Mode = mode
+        if mode == "Always" then
+            cfg:Set(true)
+        elseif mode == "Hold" then
+            cfg:Set(false)
+        end
+        Flags[cfg.Flag].Mode = mode
+    end
+    
+    function cfg:Set(input)
+        if type(input) == "boolean" then
+            cfg.Active = input
+            if cfg.Mode == "Always" then cfg.Active = true end
+        elseif tostring(input):find("Enum") then
+            input = input.Name == "Escape" and "NONE" or input
+            cfg.Key = input or "NONE"
+        elseif table.find({"Toggle", "Hold", "Always"}, input) then
+            if input == "Always" then cfg.Active = true end
+            cfg.Mode = input
+            cfg:SetMode(cfg.Mode)
+        elseif type(input) == "table" then
+            input.Key = type(input.Key) == "string" and input.Key ~= "NONE" and Library:ConvertEnum(input.key) or input.Key
+            input.Key = input.Key == Enum.KeyCode.Escape and "NONE" or input.Key
+            cfg.Key = input.Key or "NONE"
+            cfg.Mode = input.Mode or "Toggle"
+            if input.Active then cfg.Active = input.Active end
+            cfg:SetMode(cfg.Mode)
         end
         
-        function Notifications:FadeNotifs(path, is_fading)
-            local fading = is_fading and 1 or 0 
-            
-            Library:Tween(path, {BackgroundTransparency = fading}, TweenInfo.new(1, Enum.EasingStyle.Exponential, Enum.EasingDirection.Out))
-
-            for _, instance in path:GetDescendants() do 
-                if not instance:IsA("GuiObject") then 
-                    if instance:IsA("UIStroke") then
-                        Library:Tween(instance, {Transparency = fading}, TweenInfo.new(1, Enum.EasingStyle.Exponential, Enum.EasingDirection.Out))
-                    end
+        cfg.Callback(cfg.Active)
         
-                    continue
-                end 
+        local text = (tostring(cfg.Key) ~= "Enums" and (KeyNames[cfg.Key] or tostring(cfg.Key):gsub("Enum.", "")) or nil)
+        local displayText = text and tostring(text):gsub("KeyCode.", ""):gsub("UserInputType.", "") or "NONE"
         
-                if instance:IsA("TextLabel") then
-                    Library:Tween(instance, {TextTransparency = fading}, TweenInfo.new(1, Enum.EasingStyle.Exponential, Enum.EasingDirection.Out))
-                elseif instance:IsA("Frame") then
-                    Library:Tween(instance, {BackgroundTransparency = instance.Transparency and 0.6 and is_fading and 1 or 0.6}, TweenInfo.new(1, Enum.EasingStyle.Exponential, Enum.EasingDirection.Out))
+        items.KeyLabel.Text = " " .. displayText .. " "
+        
+        Flags[cfg.Flag] = {
+            mode = cfg.Mode,
+            key = cfg.Key,
+            active = cfg.Active
+        }
+    end
+    
+    function cfg:SetVisible(visible)
+        items.ModeHolder.Visible = visible
+        items.ModeHolder.Position = dim2(0, items.Button.AbsolutePosition.X + 2, 0, items.Button.AbsolutePosition.Y + 74)
+    end
+    
+    items.Button.MouseButton1Down:Connect(function()
+        task.wait()
+        items.KeyLabel.Text = " ... "
+        cfg.Binding = Library:Connection(InputService.InputBegan, function(keycode, game_event)
+            cfg:Set(keycode.KeyCode ~= Enum.KeyCode.Unknown and keycode.KeyCode or keycode.UserInputType)
+            cfg.Binding:Disconnect()
+            cfg.Binding = nil
+        end)
+    end)
+    
+    items.Button.MouseButton2Down:Connect(function()
+        cfg.Open = not cfg.Open
+        cfg:SetVisible(cfg.Open)
+    end)
+    
+    Library:Connection(InputService.InputBegan, function(input, game_event)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 then
+            if not Library:Hovering({items.ModeHolder, items.ModeDropdown.Items.List}) then
+                items.ModeDropdown:SetVisible(false)
+                cfg:SetVisible(false)
+                cfg.Open = false
+            end
+        end
+        
+        if not game_event then
+            local selectedKey = input.UserInputType == Enum.UserInputType.Keyboard and input.KeyCode or input.UserInputType
+            if selectedKey == cfg.Key then
+                if cfg.Mode == "Toggle" then
+                    cfg.Active = not cfg.Active
+                    cfg:Set(cfg.Active)
+                elseif cfg.Mode == "Hold" then
+                    cfg:Set(true)
                 end
             end
-        end 
-        
-        function Notifications:Create(properties)
-            local Cfg = {
-                Name = properties.Name or "This is a title!";
-                Lifetime = properties.LifeTime or 3;
-                Items = {};
-                outline;
-            }
-
-            local Items = Cfg.Items; do 
-                Items.Outline = Library:Create( "Frame" , {
-                    Parent = Library.Items;
-                    Name = "\0";
-                    Position = dim2(0, 100, 0, 10);
-                    BorderColor3 = rgb(0, 0, 0);
-                    BorderSizePixel = 0;
-                    AutomaticSize = Enum.AutomaticSize.XY;
-                    BackgroundColor3 = themes.preset.inline
-                });	Library:Themify(Items.Outline, "inline", "BackgroundColor3")
-                
-                Items.Inline = Library:Create( "Frame" , {
-                    Parent = Items.Outline;
-                    Name = "\0";
-                    Position = dim2(0, 1, 0, 1);
-                    BorderColor3 = rgb(0, 0, 0);
-                    Size = dim2(1, -2, 1, -2);
-                    BorderSizePixel = 0;
-                    BackgroundColor3 = themes.preset.visible_backgrounds
-                });	Library:Themify(Items.Inline, "visible_backgrounds", "BackgroundColor3")
-                
-                Library:Create( "UICorner" , {
-                    Parent = Items.Inline
-                });
-                
-                Items.Name = Library:Create( "TextLabel" , {
-                    FontFace = Font.new("rbxassetid://12187365364", Enum.FontWeight.SemiBold, Enum.FontStyle.Normal);
-                    TextColor3 = themes.preset.text_color;
-                    BorderColor3 = rgb(0, 0, 0);
-                    Text = Cfg.Name;
-                    Parent = Items.Inline;
-                    Name = "\0";
-                    AutomaticSize = Enum.AutomaticSize.XY;
-                    BackgroundTransparency = 1;
-                    TextXAlignment = Enum.TextXAlignment.Left;
-                    BorderSizePixel = 0;
-                    ZIndex = 2;
-                    TextSize = 14;
-                    BackgroundColor3 = rgb(255, 255, 255)
-                });	Library:Themify(Items.Name, "text_color", "TextColor3")
-                
-                Library:Create( "UIPadding" , {
-                    PaddingTop = dim(0, 5);
-                    PaddingBottom = dim(0, 5);
-                    Parent = Items.Name;
-                    PaddingRight = dim(0, 5);
-                    PaddingLeft = dim(0, 5)
-                });
-                
-                Library:Create( "UICorner" , {
-                    Parent = Items.Outline
-                });                       
-            end 
-            
-            local index = #Notifications.Notifs + 1
-            Notifications.Notifs[index] = Items.Outline
-            
-            local offset = Notifications:RefreshNotifications()
-
-            Items.Outline.Position = dim_offset(20, offset)
-
-            Library:Tween(Items.Outline, {AnchorPoint = vec2(0, 0)}, TweenInfo.new(1, Enum.EasingStyle.Exponential, Enum.EasingDirection.Out))
-
-            task.spawn(function()
-                task.wait(Cfg.Lifetime)
-                Notifications.Notifs[index] = nil
-                Notifications:FadeNotifs(Items.Outline, true)
-                Library:Tween(Items.Outline, {AnchorPoint = vec2(1, 0)}, TweenInfo.new(1, Enum.EasingStyle.Exponential, Enum.EasingDirection.Out))
-                task.wait(1)
-                Items.Outline:Destroy() 
-            end)
         end
-    --
--- 
+    end)
+    
+    Library:Connection(InputService.InputEnded, function(input, game_event)
+        if game_event then return end
+        local selectedKey = input.UserInputType == Enum.UserInputType.Keyboard and input.KeyCode or input.UserInputType
+        if selectedKey == cfg.Key then
+            if cfg.Mode == "Hold" then cfg:Set(false) end
+        end
+    end)
+    
+    cfg:Set({Mode = cfg.Mode, Active = cfg.Active, Key = cfg.Key})
+    ConfigFlags[cfg.Flag] = cfg.Set
+    items.ModeDropdown:Set(cfg.Mode)
+    
+    return setmetatable(cfg, Library)
+end
+
+function Library:Button(properties)
+    local cfg = {
+        Name = properties.Name or "Button",
+        Callback = properties.Callback or function() end,
+        Items = {},
+    }
+    
+    local items = cfg.Items
+    
+    items.Button = Library:Create("TextButton", {
+        Active = false,
+        BorderColor3 = rgb(0, 0, 0),
+        Text = "",
+        AutoButtonColor = false,
+        Name = "\0",
+        Parent = self.Items.Elements,
+        Size = dim2(1, 0, 0, 20),
+        Selectable = false,
+        BorderSizePixel = 0,
+        BackgroundColor3 = Theme.inline
+    })
+    
+    items.Label = Library:Create("TextLabel", {
+        FontFace = Font.new("rbxassetid://12187365364", Enum.FontWeight.SemiBold, Enum.FontStyle.Normal),
+        TextColor3 = Theme.text_color,
+        BorderColor3 = rgb(0, 0, 0),
+        RichText = true,
+        Text = cfg.Name,
+        Parent = items.Button,
+        Name = "\0",
+        AutomaticSize = Enum.AutomaticSize.XY,
+        BackgroundTransparency = 1,
+        Size = dim2(1, 0, 1, 0),
+        BorderSizePixel = 0,
+        ZIndex = 2,
+        TextSize = 14,
+        BackgroundColor3 = rgb(255, 255, 255)
+    })
+    Library:Themify(items.Label, "text_color", "TextColor3")
+    
+    items.Button.MouseButton1Click:Connect(function()
+        items.Label.TextColor3 = rgb(255, 255, 255)
+        Library:Tween(items.Label, {TextColor3 = Theme.text_color})
+        cfg.Callback()
+    end)
+    
+    return setmetatable(cfg, Library)
+end
+
+function Library:Configs(window)
+    local tab = window:Tab({Name = "Settings"})
+    
+    local section = tab:Section({Name = "Configs", Side = "Left"})
+    ConfigHolder = section:Dropdown({
+        Name = "Config List",
+        Options = {},
+        Flag = "config_name_list",
+        Callback = function(option)
+            if Flags["config_name_text"] then
+                ConfigFlags["config_name_text"](option)
+            end
+        end
+    })
+    Library:UpdateConfigList()
+    
+    section:Textbox({Name = "Config Name", Flag = "config_name_text", Default = ""})
+    
+    section:Button({
+        Name = "Save Config",
+        Callback = function()
+            if Flags["config_name_text"] == "" then return end
+            writefile(Library.Directory .. "/configs/" .. Flags["config_name_text"] .. ".cfg", Library:GetConfig())
+            Library:UpdateConfigList()
+            Notifications:Create({Name = "Saved Config"})
+        end
+    })
+    
+    section:Button({
+        Name = "Load Config",
+        Callback = function()
+            if Flags["config_name_text"] == "" then return end
+            Library:LoadConfig(readfile(Library.Directory .. "/configs/" .. Flags["config_name_text"] .. ".cfg"))
+            Notifications:Create({Name = "Loaded Config"})
+        end
+    })
+    
+    section:Button({
+        Name = "Delete Config",
+        Callback = function()
+            if Flags["config_name_text"] == "" then return end
+            delfile(Library.Directory .. "/configs/" .. Flags["config_name_text"] .. ".cfg")
+            Library:UpdateConfigList()
+            Notifications:Create({Name = "Deleted Config"})
+        end
+    })
+    
+    local themeSection = tab:Section({Name = "Theme", Side = "Right"})
+    
+    themeSection:Label({Name = "Accent"}):Colorpicker({
+        Flag = "theme_accent",
+        Color = Theme.accent,
+        Callback = function(newColor) Library:RefreshTheme("accent", newColor) end
+    })
+    
+    themeSection:Label({Name = "Window Outline"}):Colorpicker({
+        Flag = "theme_window_outline",
+        Color = Theme.window_outline,
+        Callback = function(newColor) Library:RefreshTheme("window_outline", newColor) end
+    })
+    
+    themeSection:Label({Name = "Inline"}):Colorpicker({
+        Flag = "theme_inline",
+        Color = Theme.inline,
+        Callback = function(newColor) Library:RefreshTheme("inline", newColor) end
+    })
+    
+    themeSection:Label({Name = "Background"}):Colorpicker({
+        Flag = "theme_background",
+        Color = Theme.background,
+        Callback = function(newColor) Library:RefreshTheme("background", newColor) end
+    })
+    
+    themeSection:Label({Name = "Visible Backgrounds"}):Colorpicker({
+        Flag = "theme_visible_backgrounds",
+        Color = Theme.visible_backgrounds,
+        Callback = function(newColor) Library:RefreshTheme("visible_backgrounds", newColor) end
+    })
+    
+    themeSection:Label({Name = "Text Color"}):Colorpicker({
+        Flag = "theme_text_color",
+        Color = Theme.text_color,
+        Callback = function(newColor) Library:RefreshTheme("text_color", newColor) end
+    })
+    
+    themeSection:Label({Name = "Glow"}):Colorpicker({
+        Flag = "theme_glow",
+        Color = Theme.glow,
+        Callback = function(newColor) Library:RefreshTheme("glow", newColor) end
+    })
+    
+    themeSection:Label({Name = "Deselected"}):Colorpicker({
+        Flag = "theme_deselected",
+        Color = Theme.deselected,
+        Callback = function(newColor) Library:RefreshTheme("deselected", newColor) end
+    })
+    
+    window.Tweening = true
+    section:Label({Name = "Menu Bind"}):Keybind({
+        Name = "Menu Bind",
+        Flag = "menu_bind",
+        Default = true,
+        Callback = function(bool)
+            if window.Tweening then return end
+            window:ToggleMenu(bool)
+        end
+    })
+    
+    delay(2, function() window.Tweening = false end)
+end
+
+function Notifications:Refresh()
+    local offset = 50
+    for i, notif in Notifications.Notifs do
+        Library:Tween(notif, {Position = dim_offset(20, offset)}, TweenInfo.new(1, Enum.EasingStyle.Exponential, Enum.EasingDirection.Out))
+        offset += (notif.AbsoluteSize.Y + 10)
+    end
+    return offset
+end
+
+function Notifications:FadeOut(path)
+    Library:Tween(path, {BackgroundTransparency = 1}, TweenInfo.new(1, Enum.EasingStyle.Exponential, Enum.EasingDirection.Out))
+    for _, instance in path:GetDescendants() do
+        if instance:IsA("TextLabel") then
+            Library:Tween(instance, {TextTransparency = 1}, TweenInfo.new(1, Enum.EasingStyle.Exponential, Enum.EasingDirection.Out))
+        elseif instance:IsA("Frame") then
+            Library:Tween(instance, {BackgroundTransparency = 1}, TweenInfo.new(1, Enum.EasingStyle.Exponential, Enum.EasingDirection.Out))
+        end
+    end
+end
+
+function Notifications:Create(properties)
+    local cfg = {
+        Name = properties.Name or "Notification",
+        Lifetime = properties.LifeTime or 3,
+        Items = {},
+    }
+    
+    local items = cfg.Items
+    
+    items.Outline = Library:Create("Frame", {
+        Parent = Library.Items,
+        Name = "\0",
+        Position = dim2(0, 100, 0, 10),
+        BorderColor3 = rgb(0, 0, 0),
+        BorderSizePixel = 0,
+        AutomaticSize = Enum.AutomaticSize.XY,
+        BackgroundColor3 = Theme.inline
+    })
+    Library:Themify(items.Outline, "inline", "BackgroundColor3")
+    
+    items.Inline = Library:Create("Frame", {
+        Parent = items.Outline,
+        Name = "\0",
+        Position = dim2(0, 1, 0, 1),
+        BorderColor3 = rgb(0, 0, 0),
+        Size = dim2(1, -2, 1, -2),
+        BorderSizePixel = 0,
+        BackgroundColor3 = Theme.visible_backgrounds
+    })
+    Library:Themify(items.Inline, "visible_backgrounds", "BackgroundColor3")
+    
+    Library:Create("UICorner", {Parent = items.Inline})
+    
+    items.Label = Library:Create("TextLabel", {
+        FontFace = Font.new("rbxassetid://12187365364", Enum.FontWeight.SemiBold, Enum.FontStyle.Normal),
+        TextColor3 = Theme.text_color,
+        BorderColor3 = rgb(0, 0, 0),
+        Text = cfg.Name,
+        Parent = items.Inline,
+        Name = "\0",
+        AutomaticSize = Enum.AutomaticSize.XY,
+        BackgroundTransparency = 1,
+        TextXAlignment = Enum.TextXAlignment.Left,
+        BorderSizePixel = 0,
+        ZIndex = 2,
+        TextSize = 14,
+        BackgroundColor3 = rgb(255, 255, 255)
+    })
+    Library:Themify(items.Label, "text_color", "TextColor3")
+    
+    Library:Create("UIPadding", {
+        PaddingTop = dim(0, 5),
+        PaddingBottom = dim(0, 5),
+        Parent = items.Label,
+        PaddingRight = dim(0, 5),
+        PaddingLeft = dim(0, 5)
+    })
+    
+    Library:Create("UICorner", {Parent = items.Outline})
+    
+    local index = #Notifications.Notifs + 1
+    Notifications.Notifs[index] = items.Outline
+    
+    local offset = Notifications:Refresh()
+    items.Outline.Position = dim_offset(20, offset)
+    
+    task.spawn(function()
+        task.wait(cfg.Lifetime)
+        Notifications.Notifs[index] = nil
+        Notifications:FadeOut(items.Outline)
+        task.wait(1)
+        items.Outline:Destroy()
+        Notifications:Refresh()
+    end)
+end
 
 return Library
