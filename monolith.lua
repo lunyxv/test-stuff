@@ -456,15 +456,34 @@
     -- Library element functions
         function library:window(properties)
             local cfg = { 
-                -- Properties
-                name = properties.name or properties.Name or "nebula";
-                size = properties.size or properties.Size or dim2(0, 400, 0, 350);
-                logo = properties.logo or properties.Logo or "rbxassetid://128155293790451";
+    -- Properties
+    name = properties.name or properties.Name or "nebula";
+    size = properties.size or properties.Size or dim2(0, 650, 0, 400);
+    logo = properties.logo or properties.Logo or "rbxassetid://128155293790451";
 
-                selected_tab = nil;
-                items = {};
-                tweening = false;
-            }
+    selected_tab = nil;
+    items = {};
+    tweening = false;
+}
+
+-- Mobile auto-sizing
+do
+    local uis = game:GetService("UserInputService")
+    local camera = workspace.CurrentCamera
+    
+    if uis.TouchEnabled then
+        local viewport = camera.ViewportSize
+        
+        -- Fit menu within screen with padding
+        local max_width = viewport.X - 20
+        local max_height = viewport.Y - 20
+        
+        local target_width = math.min(cfg.size.X.Offset, max_width)
+        local target_height = math.min(cfg.size.Y.Offset, max_height)
+        
+        cfg.size = dim2(0, target_width, 0, target_height)
+    end
+end
             
             library[ "items" ] = library:create( "ScreenGui" , {
                 Parent = coregui;
