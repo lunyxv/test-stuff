@@ -458,7 +458,7 @@
             local cfg = { 
                 -- Properties
                 name = properties.name or properties.Name or "nebula";
-                size = properties.size or properties.Size or dim2(0, 650, 0, 400);
+                size = properties.size or properties.Size or dim2(0, 400, 0, 350);
                 logo = properties.logo or properties.Logo or "rbxassetid://128155293790451";
 
                 selected_tab = nil;
