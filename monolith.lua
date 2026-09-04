@@ -698,7 +698,7 @@
                 });
                 
                 library:create( "UIPadding" , {
-                    PaddingTop = dim(0, 18);
+                    PaddingTop = dim(0, 26);
                     PaddingBottom = dim(0, 18);
                     Parent = items[ "tab" ];
                     PaddingRight = dim(0, 18);
@@ -848,7 +848,7 @@
                     Text = cfg.name;
                     Parent = items[ "section_outline" ];
                     BackgroundTransparency = 1;
-                    Position = dim2(0, 10, 0, -10);
+                    Position = dim2(0, 8, 0, -12);
                     BorderSizePixel = 0;
                     AutomaticSize = Enum.AutomaticSize.XY;
                     TextSize = 10;
@@ -891,6 +891,8 @@
                     Parent = items[ "object" ];
                     BackgroundTransparency = 1;
                     Name = "\0";
+                    AnchorPoint = vec2(0, 0.5);
+                    Position = dim2(0, 0, 0.5, 0);
                     BorderColor3 = rgb(0, 0, 0);
                     Size = dim2(0, 16, 0, 16);
                     BorderSizePixel = 0;
@@ -917,13 +919,6 @@
                     CornerRadius = dim(0, 4)
                 });
                 
-                library:create( "UIListLayout" , {
-                    Parent = items[ "object" ];
-                    Padding = dim(0, 8);
-                    SortOrder = Enum.SortOrder.LayoutOrder;
-                    FillDirection = Enum.FillDirection.Horizontal
-                });
-                
                 items[ "text" ] = library:create( "TextLabel" , {
                     FontFace = library.font;
                     TextColor3 = rgb(178, 178, 178);
@@ -931,7 +926,8 @@
                     Text = cfg.name;
                     Parent = items[ "object" ];
                     BackgroundTransparency = 1;
-                    Position = dim2(0, 16, 0, 0);
+                    AnchorPoint = vec2(0, 0.5);
+                    Position = dim2(0, 22, 0.5, 0);
                     BorderSizePixel = 0;
                     AutomaticSize = Enum.AutomaticSize.XY;
                     TextSize = 10;
@@ -1004,7 +1000,8 @@
                     Parent = items[ "object" ];
                     Padding = dim(0, 8);
                     SortOrder = Enum.SortOrder.LayoutOrder;
-                    FillDirection = Enum.FillDirection.Horizontal
+                    FillDirection = Enum.FillDirection.Horizontal;
+                    VerticalAlignment = Enum.VerticalAlignment.Center
                 });
                 
                 items[ "slider_parent" ] = library:create( "TextButton" , {
@@ -1199,8 +1196,8 @@
                 
                 library:create( "UIPadding" , {
                     Parent = items[ "dropdown_inner" ];
-                    PaddingRight = dim(0, 40);
-                    PaddingLeft = dim(0, 10)
+                    PaddingRight = dim(0, 30);
+                    PaddingLeft = dim(0, 8)
                 });
                 
                 items[ "arrow" ] = library:create( "ImageLabel" , {
@@ -1211,17 +1208,10 @@
                     AnchorPoint = vec2(1, 0.5);
                     Image = "rbxassetid://76667213487638";
                     BackgroundTransparency = 1;
-                    Position = dim2(1, -6, 0.5, 0);
+                    Position = dim2(1, -5, 0.5, 0);
                     Size = dim2(0, 8, 0, 5);
                     BorderSizePixel = 0;
                     BackgroundColor3 = rgb(255, 255, 255)
-                });
-                
-                library:create( "UIListLayout" , {
-                    Parent = items[ "object" ];
-                    Padding = dim(0, 8);
-                    SortOrder = Enum.SortOrder.LayoutOrder;
-                    FillDirection = Enum.FillDirection.Horizontal
                 });
                 
                 items[ "dropdown_holder" ] = library:create( "Frame" , {
@@ -1302,7 +1292,7 @@
                 items[ "arrow" ].Rotation = bool and 180 or 0
 
                 items[ "dropdown_holder" ].Size = dim2(0, items.dropdown_outline.AbsoluteSize.X, 0, 0)
-                items[ "dropdown_holder" ].Position = dim2(0, items.dropdown_outline.AbsolutePosition.X, 0, items.dropdown_outline.AbsolutePosition.Y + items.dropdown_outline.AbsoluteSize.Y + 5)
+                items[ "dropdown_holder" ].Position = dim2(0, items.dropdown_outline.AbsolutePosition.X, 0, items.dropdown_outline.AbsolutePosition.Y + items.dropdown_outline.AbsoluteSize.Y + 4)
                 
                 library.current = cfg
             end
@@ -1418,18 +1408,12 @@
                     RichText = true;
                     Parent = items.object;
                     BackgroundTransparency = 1;
-                    Position = dim2(0, 12, 0, 0);
+                    AnchorPoint = vec2(0, 0.5);
+                    Position = dim2(0, 12, 0.5, 0);
                     BorderSizePixel = 0;
                     AutomaticSize = Enum.AutomaticSize.XY;
                     TextSize = 10;
                     BackgroundColor3 = rgb(255, 255, 255)
-                });
-
-                library:create( "UIListLayout" , {
-                    Parent = items[ "object" ];
-                    Padding = dim(0, 8);
-                    SortOrder = Enum.SortOrder.LayoutOrder;
-                    FillDirection = Enum.FillDirection.Horizontal
                 });
 
                 library:create( "UIStroke" , {
